@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>BeatGuessr</title>
+</head>
+<style>
+
+    body {
+        background-image: url("../static/beatgussr-background.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-attachment: fixed;
+    }
+</style>
+
+
+<body>
+    <center>
+        <h1 style="color: white; font-size: 60px;">BeatGuessr {{name}}</h1>
+        <p style="color: white; font-size: 24px;">Anmeldung:</p>
+        <button style="font-size: 20px;">login</button>
+        <button style="font-size: 20px;" onclick="window.location.href='./registrierung.html';">registrierung </button>
+    </center>
+
+    <ul>
+        {% for item in tech_list %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
+
