@@ -4,25 +4,50 @@
 <head>
     <meta charset="utf-8" />
     <title>BeatGuessr</title>
-</head>
 <style>
-
     body {
-        background-image: url("../static/beatgussr-background.png");
+        background-image:
+            url("../static/beatgussr-background.png");
         background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-        background-attachment: fixed;
+        background-repeat: no-repeat,no-repeat;
+        background-position: center,center;
+        background-attachment: fixed,fixed;
+    }
+
+    .sound-wave {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: auto;
+        opacity: 0.8;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 20px;
+        color: white;
+        background-color: #007BFF;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-top: 20px;
     }
 </style>
+</head>
+
 
 
 <body>
+    <img class="sound-wave" src="{{ url_for('static', filename='sound-wave.gif') }}" alt="Sound Wave" />
     <center>
         <h1 style="color: white; font-size: 60px;">BeatGuessr {{name}}</h1>
         <p style="color: white; font-size: 24px;">Anmeldung:</p>
-        <button style="font-size: 20px;">login</button>
-        <button style="font-size: 20px;" onclick="window.location.href='./registrierung.html';">registrierung </button>
+        <a href="/login" class="btn">login</a>
+        <!-- <button style="font-size: 20px;" onclick="window.location.href='/registrierung.html';">registrierung </button> -->
+        <a class="btn" href="/registrierung" >Registrierung</a>
     </center>
 
     <ul>
