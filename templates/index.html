@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/png" href="../static/favicon.png">
     <meta charset="utf-8" />
     <title>BeatGuessr</title>
 <style>
@@ -16,7 +17,7 @@
 
     .sound-wave {
         position: absolute;
-        top: 50%;
+        top: 80%;
         left: 50%;
         transform: translate(-50%, -50%);
         width: 600px;
@@ -35,15 +36,22 @@
         text-decoration: none;
         margin-top: 20px;
     }
+    .title-pulse {
+        animation: pulse 1.8s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+        0%   { transform: scale(1); }
+        50%  { transform: scale(1.08); }
+        100% { transform: scale(1); }
+    }
 </style>
 </head>
 
-
-
-<body>
+<body class="body"> 
     <img class="sound-wave" src="{{ url_for('static', filename='sound-wave.gif') }}" alt="Sound Wave" />
     <center>
-        <h1 style="color: white; font-size: 60px;">BeatGuessr {{name}}</h1>
+        <h1 class="title-pulse" style="color: white; font-size: 60px;">BeatGuessr {{name}}</h1>
         <p style="color: white; font-size: 24px;">Anmeldung:</p>
         <a href="/login" class="btn">login</a>
         <!-- <button style="font-size: 20px;" onclick="window.location.href='/registrierung.html';">registrierung </button> -->
