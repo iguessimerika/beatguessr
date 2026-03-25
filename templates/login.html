@@ -134,24 +134,18 @@
         const form = document.getElementById("loginForm");
         const error = document.getElementById("error");
 
-        // form.addEventListener("submit", (e) => {
-        //     e.preventDefault(); // verhindert das automatische Neuladen
+        form.addEventListener("submit", (e) => {
+            e.preventDefault(); // verhindert das automatische Neuladen
 
-        //     const email = document.getElementById("email").value;
-        //     const pw = document.getElementById("password").value;
+            const email = document.getElementById("email").value;
+            const pw = document.getElementById("password").value;
 
-        //     // Beispielhafte Fake-Prüfung (Frontend)
-        //     if (email === "" || pw === "") {
-        //         error.textContent = "Bitte fülle alle Felder aus.";
-        //         return;
-        //     }
-
-        //     // Hier würdest du später deinen Backend-Login prüfen
-        //     // fetch("/login", { ... })
-
-        //     // Für jetzt: Fehlermeldung anzeigen
-        //     error.textContent = "E-Mail oder Passwort ist falsch.";
-        // });
+            // Beispielhafte Fake-Prüfung (Frontend)
+            if (email === "" || pw === "") {
+                error.textContent = "Bitte fülle alle Felder aus.";
+                return;
+            }
+        });
     </script>
 
 </body>
