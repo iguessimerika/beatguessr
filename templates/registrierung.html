@@ -124,22 +124,23 @@
 
         <h2 style="margin-top: -10px; font-weight: 400;">Registrieren</h2>
 
-        <form>
-            <input type="text" placeholder="Benutzername" required>
+        <form method="post" action="/registrierung">
+            <input type="text" name="username" placeholder="Benutzername" required>
 
-            <input type="email" placeholder="E-Mail-Adresse" required>
+            <input type="email" name="email" placeholder="E-Mail-Adresse" required>
 
-            <input id="pw1" type="password" placeholder="Passwort" required>
+            <input id="pw1" type="password" name="password" placeholder="Passwort" required>
 
             <div class="strength">
                 <div id="strength-bar" class="strength-bar"></div>
             </div>
 
-            <input id="pw2" type="password" placeholder="Passwort bestätigen" required>
+            <input id="pw2" type="password" name="confirm_password" placeholder="Passwort bestätigen" required>
 
             <div id="error" class="error"></div>
 
             <button type="submit">Konto erstellen</button>
+
         </form>
 
         <div class="login-link">
