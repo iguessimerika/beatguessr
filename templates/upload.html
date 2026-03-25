@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Song hochladen</title>
+</head>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #6a0dad, #b266ff);
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+
+    h2 {
+        text-align: center;
+        color: white;
+        margin-top: 40px;
+        font-size: 2em;
+    }
+
+    form {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        max-width: 450px;
+        margin: 40px auto;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        color: white;
+    }
+
+    label {
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        font-size: 0.95em;
+    }
+
+    input[type="file"] {
+        background: white;
+        color: black;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #8a2be2, #d580ff);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-size: 1em;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    p {
+        text-align: center;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+<body>
+
+<h2>Song hochladen</h2>
+
+<form method="POST" action="/upload" enctype="multipart/form-data">
+    
+    <label>Titel:</label><br>
+    <input type="text" name="title" required><br><br>
+
+    <label>Artist auswählen:</label><br>
+    <select name="artist_id">
+        <option value="">-- auswählen --</option>
+        {% for artist in artists %}
+            <option value="{{ artist.artistid }}">{{ artist.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>ODER neuen Artist eingeben:</label><br>
+    <input type="text" name="new_artist"><br><br>
+
+    <label>Hinweis 1:</label><br>
+    <input type="text" name="hint1"><br><br>
+
+    <label>Hinweis 2:</label><br>
+    <input type="text" name="hint2"><br><br>
+
+    <label>MP3 Datei:</label><br>
+    <input type="file" name="mp3" accept=".mp3" required><br><br>
+
+    <button type="submit">Hochladen</button>
+
+</form>
+
+{% if message %}
+<p>{{ message }}</p>
+{% endif %}
+
+</body>
+</html>
