@@ -59,7 +59,9 @@ def get_user(email):
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM user WHERE email = '{email}'")
-        return cursor.fetchone()
+        
+        user = cursor.fetchone()
+        return user or "no-user"
     
 if __name__ == "__main__":
     users = get_users()

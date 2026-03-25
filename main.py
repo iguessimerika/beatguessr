@@ -8,7 +8,7 @@ app.secret_key = "supersecretkey"  # wichtig für Sessions!
 def home():
     data.init_database()
 
-    session.clear() #
+    session.clear()
     
     if not session.get('logged_in'):
         return render_template("index.html")
@@ -38,18 +38,27 @@ def login():
 
 @app.route('/login', methods=['POST'])
 def pw_check():
+    error_msg = None
     email = request.form['email']
     password = request.form['password']
     
     user = data.get_user(email)
-    user_pw = user['password']
-
-    if utils.check_password(password, user_pw):
-        session['logged_in'] = True
-        session['current_email'] = email
-        return redirect(url_for('dashboard'))
+    print(user)
+    
+    if user == "no-user":
+        error_msg = "Kein Benutzer mit dieser E-Mail Adresse hinterlegt!"
     else:
-        return render_template("login.html", error="Falsches Passwort!")
+        user_pw = user['password']
+
+        if utils.check_password(password, user_pw):
+            session['logged_in'] = True
+            session['current_email'] = email
+            return redirect(url_for('dashboard'))
+        else:
+            error_msg = "Falsches Passwort!"
+    
+    print("Test")
+    return render_template("login.html", error=error_msg)
     
 @app.route('/dashboard')
 def dashboard():

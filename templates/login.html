@@ -130,23 +130,5 @@
 
     </div>
 
-    <script>
-        const form = document.getElementById("loginForm");
-        const error = document.getElementById("error");
-
-        form.addEventListener("submit", (e) => {
-            e.preventDefault(); // verhindert das automatische Neuladen
-
-            const email = document.getElementById("email").value;
-            const pw = document.getElementById("password").value;
-
-            // Beispielhafte Fake-Prüfung (Frontend)
-            if (email === "" || pw === "") {
-                error.textContent = "Bitte fülle alle Felder aus.";
-                return;
-            }
-        });
-    </script>
-
 </body>
 </html>
