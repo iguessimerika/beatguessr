@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BeatGuessr – Spiel</title>
 
-    <link rel="icon" type="image/png" href="../static/favicon.png">
-
     <style>
         body {
             background-image: url("../static/beatgussr-background.png");
@@ -14,24 +12,12 @@
             background-position: center;
             background-attachment: fixed;
             margin: 0;
-
             font-family: 'Segoe UI', sans-serif;
-
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             color: white;
-        }
-
-        .title-pulse {
-            animation: pulse 1.8s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%   { transform: scale(1); }
-            50%  { transform: scale(1.08); }
-            100% { transform: scale(1); }
         }
 
         .game-container {
@@ -41,6 +27,15 @@
             backdrop-filter: blur(6px);
             width: 500px;
             text-align: center;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 10px;
+            font-size: 16px;
         }
 
         .btn {
@@ -63,23 +58,7 @@
             background: #e6e6e6;
         }
 
-        input {
-            width: 90%;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            margin-top: 10px;
-            font-size: 16px;
-        }
-
-        .hint-box {
-            background: rgba(255,255,255,0.15);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            display: none;
-        }
-
+        /* Dropdown */
         .dropdown {
             width: 90%;
             background: rgba(255,255,255,0.9);
@@ -104,53 +83,71 @@
             background: #e6e6e6;
         }
 
-        /* Audio-Controls (eigene) */
+        /* Eigener Player im Stil des Standardplayers */
         .audio-controls {
             margin-top: 20px;
+            width: 100%;
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .play-btn {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             border: none;
-            background: #ffffff;
+            background: white;
             cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 18px;
         }
 
-        .play-btn:hover {
-            background: #e6e6e6;
-        }
-
-        .time-label {
-            font-size: 14px;
-        }
-
-        /* Lautsprecher + Slider */
-        .volume-container {
+        .progress-container {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            cursor: pointer;
             position: relative;
-            display: inline-block;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #4da3ff;
+            border-radius: 4px;
         }
 
         .volume-icon {
-            width: 30px;
+            width: 28px;
             cursor: pointer;
             filter: brightness(0) invert(1);
         }
 
         .volume-slider {
+            width: 90px;
+            display: none;
             position: absolute;
-            left: 40px;
-            top: -2px;
-            width: 120px;
+            bottom: -35px;
+        }
+
+        .volume-container {
+            position: relative;
+        }
+
+        .time-label {
+            font-size: 14px;
+            min-width: 80px;
+        }
+
+        .hint-box {
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
             display: none;
         }
     </style>
@@ -160,25 +157,26 @@
 
     <div class="game-container">
 
-        <h1 class="title-pulse" style="font-size: 45px;">Song raten</h1>
+        <h1 style="font-size: 45px;">Song raten</h1>
 
-        <!-- Eingabefeld Artist -->
         <input id="artistInput" type="text" placeholder="Artist eingeben" autocomplete="off">
         <div id="artistDropdown" class="dropdown"></div>
 
-        <!-- Eingabefeld Songtitel -->
         <input id="songInput" type="text" placeholder="Songtitel eingeben" autocomplete="off">
         <div id="songDropdown" class="dropdown"></div>
 
         <!-- Audio ohne native Controls -->
         <audio id="player">
             <source id="audioSource" src="{{ song_url }}" type="audio/mpeg">
-            Dein Browser unterstützt das Audio-Element nicht.
         </audio>
 
-        <!-- Eigene Audio-Controls -->
+        <!-- Eigener Player -->
         <div class="audio-controls">
             <button id="playPauseBtn" class="play-btn">▶</button>
+
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
 
             <div class="volume-container">
                 <img src="../static/volume.png" id="volumeIcon" class="volume-icon">
@@ -188,37 +186,23 @@
             <span id="timeLabel" class="time-label">0:00 / 0:00</span>
         </div>
 
-        <!-- Guess Button -->
         <button class="btn" id="guessBtn">Guess abgeben</button>
 
-        <!-- Hinweisfelder -->
         <div id="hint1" class="hint-box">{{ hint1 }}</div>
         <div id="hint2" class="hint-box">{{ hint2 }}</div>
 
     </div>
 
     <script>
-        let versuche = 1;
-
-        const hint1 = document.getElementById("hint1");
-        const hint2 = document.getElementById("hint2");
-
-        const guessBtn = document.getElementById("guessBtn");
-
-        const artistInput = document.getElementById("artistInput");
-        const songInput = document.getElementById("songInput");
-
-        const artistDropdown = document.getElementById("artistDropdown");
-        const songDropdown = document.getElementById("songDropdown");
-
         const player = document.getElementById("player");
         const playPauseBtn = document.getElementById("playPauseBtn");
+        const progressContainer = document.querySelector(".progress-container");
+        const progressBar = document.getElementById("progressBar");
         const timeLabel = document.getElementById("timeLabel");
-
         const volumeIcon = document.getElementById("volumeIcon");
         const volumeSlider = document.getElementById("volumeSlider");
 
-        // Play/Pause
+        /* Play/Pause */
         playPauseBtn.addEventListener("click", () => {
             if (player.paused) {
                 player.play();
@@ -229,7 +213,7 @@
             }
         });
 
-        // Zeit-Anzeige
+        /* Zeitformat */
         function formatTime(sec) {
             if (isNaN(sec)) return "0:00";
             const m = Math.floor(sec / 60);
@@ -237,130 +221,37 @@
             return `${m}:${s}`;
         }
 
+        /* Fortschritt aktualisieren */
         player.addEventListener("timeupdate", () => {
+            const percent = (player.currentTime / player.duration) * 100;
+            progressBar.style.width = percent + "%";
             timeLabel.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration)}`;
         });
 
         player.addEventListener("loadedmetadata", () => {
-            timeLabel.textContent = `${formatTime(0)} / ${formatTime(player.duration)}`;
+            timeLabel.textContent = `0:00 / ${formatTime(player.duration)}`;
         });
 
-        // Lautstärke-Slider ein-/ausblenden
+        /* Fortschrittsbalken klicken */
+        progressContainer.addEventListener("click", (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            player.currentTime = percent * player.duration;
+        });
+
+        /* Lautstärke */
         volumeIcon.addEventListener("click", () => {
             volumeSlider.style.display =
                 volumeSlider.style.display === "block" ? "none" : "block";
         });
 
-        // Lautstärke ändern
         volumeSlider.addEventListener("input", () => {
             player.volume = volumeSlider.value / 100;
-        });
-
-        // ARTIST LIVE SEARCH
-        artistInput.addEventListener("input", () => {
-            const query = artistInput.value.trim();
-
-            if (query.length < 2) {
-                artistDropdown.style.display = "none";
-                artistDropdown.innerHTML = "";
-                return;
-            }
-
-            fetch(`/search_artist?query=${encodeURIComponent(query)}`)
-                .then(res => res.json())
-                .then(data => {
-                    artistDropdown.innerHTML = "";
-                    if (data.length === 0) {
-                        artistDropdown.style.display = "none";
-                        return;
-                    }
-                    data.forEach(artist => {
-                        const div = document.createElement("div");
-                        div.textContent = artist.name;
-                        div.onclick = () => {
-                            artistInput.value = artist.name;
-                            artistDropdown.style.display = "none";
-                        };
-                        artistDropdown.appendChild(div);
-                    });
-                    artistDropdown.style.display = "block";
-                });
-        });
-
-        // SONG LIVE SEARCH
-        songInput.addEventListener("input", () => {
-            const query = songInput.value.trim();
-            const artist = artistInput.value.trim();
-
-            if (query.length < 2) {
-                songDropdown.style.display = "none";
-                songDropdown.innerHTML = "";
-                return;
-            }
-
-            fetch(`/search_song?query=${encodeURIComponent(query)}&artist=${encodeURIComponent(artist)}`)
-                .then(res => res.json())
-                .then(data => {
-                    songDropdown.innerHTML = "";
-                    if (data.length === 0) {
-                        songDropdown.style.display = "none";
-                        return;
-                    }
-                    data.forEach(song => {
-                        const div = document.createElement("div");
-                        div.textContent = song.title;
-                        div.onclick = () => {
-                            songInput.value = song.title;
-                            songDropdown.style.display = "none";
-                        };
-                        songDropdown.appendChild(div);
-                    });
-                    songDropdown.style.display = "block";
-                });
-        });
-
-        // Dropdowns schließen
-        document.addEventListener("click", (e) => {
-            if (!artistInput.contains(e.target) && !artistDropdown.contains(e.target)) {
-                artistDropdown.style.display = "none";
-            }
-            if (!songInput.contains(e.target) && !songDropdown.contains(e.target)) {
-                songDropdown.style.display = "none";
-            }
-        });
-
-        // Guess-Logik
-        guessBtn.addEventListener("click", () => {
-            versuche++;
-
-            if (versuche === 4) hint1.style.display = "block";
-            if (versuche === 5) hint2.style.display = "block";
-
-            if (versuche === 6) {
-                window.location.href = "/verloren";
-                return;
-            }
-
-            fetch("/guess", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    artist: artistInput.value.trim(),
-                    song: songInput.value.trim()
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.correct === true) {
-                    window.location.href = "/gewonnen";
-                }
-            });
         });
     </script>
 
 </body>
 </html>
-
 
 
 
