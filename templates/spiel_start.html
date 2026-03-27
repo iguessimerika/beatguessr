@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeatGuessr – Spiel</title>
+
+    <style>
+        body {
+            background-image: url("../static/beatgussr-background.png");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .game-container {
+            background: rgba(0, 0, 0, 0.55);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(6px);
+            width: 500px;
+            text-align: center;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: 600;
+            color: black;
+            text-decoration: none;
+            width: 250px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .btn:hover {
+            background: #e6e6e6;
+        }
+
+        /* Dropdown */
+        .dropdown {
+            width: 90%;
+            background: rgba(255,255,255,0.9);
+            color: black;
+            border-radius: 8px;
+            margin: 0 auto;
+            text-align: left;
+            display: none;
+            position: relative;
+            top: -5px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .dropdown div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .dropdown div:hover {
+            background: #e6e6e6;
+        }
+
+        /* Eigener Player im Stil des Standardplayers */
+        .audio-controls {
+            margin-top: 20px;
+            width: 100%;
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #4da3ff;
+            border-radius: 4px;
+        }
+
+        .volume-icon {
+            width: 28px;
+            cursor: pointer;
+            filter: brightness(0) invert(1);
+        }
+
+        .volume-slider {
+            width: 90px;
+            display: none;
+            position: absolute;
+            bottom: -35px;
+        }
+
+        .volume-container {
+            position: relative;
+        }
+
+        .time-label {
+            font-size: 14px;
+            min-width: 80px;
+        }
+
+        .hint-box {
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-container">
+
+        <h1 style="font-size: 45px;">Song raten</h1>
+
+        <input id="artistInput" type="text" placeholder="Artist eingeben" autocomplete="off">
+        <div id="artistDropdown" class="dropdown"></div>
+
+        <input id="songInput" type="text" placeholder="Songtitel eingeben" autocomplete="off">
+        <div id="songDropdown" class="dropdown"></div>
+
+        <!-- Audio ohne native Controls -->
+        <audio id="player">
+            <source id="audioSource" src="{{ song_url }}" type="audio/mpeg">
+        </audio>
+
+        <!-- Eigener Player -->
+        <div class="audio-controls">
+            <button id="playPauseBtn" class="play-btn">▶</button>
+
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+
+            <div class="volume-container">
+                <img src="../static/volume.png" id="volumeIcon" class="volume-icon">
+                <input type="range" id="volumeSlider" min="0" max="100" value="100" class="volume-slider">
+            </div>
+
+            <span id="timeLabel" class="time-label">0:00 / 0:00</span>
+        </div>
+
+        <button class="btn" id="guessBtn">Guess abgeben</button>
+
+        <div id="hint1" class="hint-box">{{ hint1 }}</div>
+        <div id="hint2" class="hint-box">{{ hint2 }}</div>
+
+    </div>
+
+    <script>
+        const player = document.getElementById("player");
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const progressContainer = document.querySelector(".progress-container");
+        const progressBar = document.getElementById("progressBar");
+        const timeLabel = document.getElementById("timeLabel");
+        const volumeIcon = document.getElementById("volumeIcon");
+        const volumeSlider = document.getElementById("volumeSlider");
+
+        /* Play/Pause */
+        playPauseBtn.addEventListener("click", () => {
+            if (player.paused) {
+                player.play();
+                playPauseBtn.textContent = "⏸";
+            } else {
+                player.pause();
+                playPauseBtn.textContent = "▶";
+            }
+        });
+
+        /* Zeitformat */
+        function formatTime(sec) {
+            if (isNaN(sec)) return "0:00";
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60).toString().padStart(2, "0");
+            return `${m}:${s}`;
+        }
+
+        /* Fortschritt aktualisieren */
+        player.addEventListener("timeupdate", () => {
+            const percent = (player.currentTime / player.duration) * 100;
+            progressBar.style.width = percent + "%";
+            timeLabel.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration)}`;
+        });
+
+        player.addEventListener("loadedmetadata", () => {
+            timeLabel.textContent = `0:00 / ${formatTime(player.duration)}`;
+        });
+
+        /* Fortschrittsbalken klicken */
+        progressContainer.addEventListener("click", (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            player.currentTime = percent * player.duration;
+        });
+
+        /* Lautstärke */
+        volumeIcon.addEventListener("click", () => {
+            volumeSlider.style.display =
+                volumeSlider.style.display === "block" ? "none" : "block";
+        });
+
+        volumeSlider.addEventListener("input", () => {
+            player.volume = volumeSlider.value / 100;
+        });
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
