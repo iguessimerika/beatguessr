@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 import utils
 import time
+from flask import jsonify
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / 'beatguessr.db'
@@ -92,6 +93,19 @@ def get_artists():
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM artist")
         return cursor.fetchall()
+    
+def search_artists(query):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        
+        if not query:
+            return jsonify([])
+        
+        artists = cursor.execute(
+        "SELECT artistid, name FROM artist WHERE name LIKE ?"
+        , (f"%{query}%",)).fetchall()
+        
+        return jsonify([dict(artist) for artist in artists])
         
 
 def add_song(title, artist_id, filepath):
@@ -123,6 +137,22 @@ def get_songs():
         cursor.execute(f"SELECT * FROM song")
         
         return cursor.fetchall()
+    
+
+def search_songs(query, artist):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        
+        if not query or not artist:
+            return jsonify([])
+        
+        songs = cursor.execute("""
+        SELECT song.songid, song.title 
+        FROM song
+        JOIN artist ON song.artist_id = artist.artistid
+        WHERE song.title LIKE ? AND artist.name = ?""", (f"%{query}%", artist)).fetchall()
+        
+        return jsonify([dict(song) for song in songs])
         
         
 def add_hint(message, song_id, hint_number):
@@ -134,6 +164,15 @@ def add_hint(message, song_id, hint_number):
         )
         
         conn.commit()
+
+def get_song_hints(songid):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        hints = cursor.execute(
+            f"SELECT hint_number, hint_text FROM hint WHERE song_id = '{songid}'"
+            ).fetchall()
+        
+        return hints
 
 
 def add_guess(song_id, user_id, seconds):

@@ -37,6 +37,10 @@
             margin-top: 10px;
             font-size: 16px;
         }
+        
+        .input-wrapper {
+            position: relative;
+        }
 
         .btn {
             display: inline-block;
@@ -59,28 +63,37 @@
         }
 
         /* Dropdown */
+
         .dropdown {
-            width: 90%;
-            background: rgba(255,255,255,0.9);
-            color: black;
-            border-radius: 8px;
-            margin: 0 auto;
-            text-align: left;
-            display: none;
-            position: relative;
-            top: -5px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+
+            background: white;
+            border: 2px solid black;
+            border-top: none;
+
             max-height: 150px;
             overflow-y: auto;
-            z-index: 10;
+
+            z-index: 9999;
         }
 
         .dropdown div {
-            padding: 10px;
+            padding: 8px;
             cursor: pointer;
+            color: black;
+            background: white;
         }
 
         .dropdown div:hover {
-            background: #e6e6e6;
+            background-color: #f0f0f0;
+        }
+
+        /* versteckt leere dropdowns */
+        .dropdown:empty {
+            display: none;
         }
 
         /* Eigener Player im Stil des Standardplayers */
@@ -150,6 +163,13 @@
             margin-top: 15px;
             display: none;
         }
+
+        .attemptMessage {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #ffcccc;
+            display: none;
+        }
     </style>
 </head>
 
@@ -159,14 +179,37 @@
 
         <h1 style="font-size: 45px;">Song raten</h1>
 
-        <input id="artistInput" type="text" placeholder="Artist eingeben" autocomplete="off">
-        <div id="artistDropdown" class="dropdown"></div>
+        <h2 id="attemptMessage" style="font-size: 24px;"></h2>
 
-        <input id="songInput" type="text" placeholder="Songtitel eingeben" autocomplete="off">
-        <div id="songDropdown" class="dropdown"></div>
+        <div class="autocomplete-container">
+        <!-- Artist -->
+        <div class="input-wrapper">
+            <input 
+                id="artistInput" 
+                name="artistInput" 
+                type="text" 
+                placeholder="Artist eingeben" 
+                autocomplete="off"
+            >
+            <div id="artistDropdown" class="dropdown"></div>
+        </div>
+
+        <!-- Song -->
+        <div class="input-wrapper">
+            <input 
+                id="songInput" 
+                name="songInput" 
+                type="text" 
+                placeholder="Songtitel eingeben" 
+                autocomplete="off"
+                disabled
+            >
+            <div id="songDropdown" class="dropdown"></div>
+        </div>
+    </div>
 
         <!-- Audio ohne native Controls -->
-        <audio id="player">
+        <audio id="player" name="player">
             <source id="audioSource" src="{{ song_url }}" type="audio/mpeg">
         </audio>
 
@@ -188,8 +231,8 @@
 
         <button class="btn" id="guessBtn">Guess abgeben</button>
 
-        <div id="hint1" class="hint-box">{{ hint1 }}</div>
-        <div id="hint2" class="hint-box">{{ hint2 }}</div>
+        <div id="hint1" class="hint-box">Hinweis 1: {{ hint1 }}</div>
+        <div id="hint2" class="hint-box">Hinweis 2: {{ hint2 }}</div>
 
     </div>
 
@@ -201,6 +244,11 @@
         const timeLabel = document.getElementById("timeLabel");
         const volumeIcon = document.getElementById("volumeIcon");
         const volumeSlider = document.getElementById("volumeSlider");
+        const artistInput = document.getElementById("artistInput");
+        const artistDropdown = document.getElementById("artistDropdown");
+        const songInput = document.getElementById("songInput");
+        const songDropdown = document.getElementById("songDropdown");
+        const attemptMessage = document.getElementById("attemptMessage");
 
         /* Play/Pause */
         playPauseBtn.addEventListener("click", () => {
@@ -248,6 +296,107 @@
         volumeSlider.addEventListener("input", () => {
             player.volume = volumeSlider.value / 100;
         });
+
+        /* Dropdown-Funktionalität für Artist */
+        artistInput.addEventListener("input", async () => {
+            const q = artistInput.value;
+            artistDropdown.innerHTML = "";
+
+            if (!q) return;
+
+            const res = await fetch(`/search_artists?q=${q}`);
+            const data = await res.json();
+            
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.textContent = item.name;
+                
+                div.onclick = () => {
+                    artistInput.value = item.name;
+                    artistInput.dataset.id = item.artistid;
+                    artistDropdown.innerHTML = "";
+                };
+
+                artistDropdown.innerHTML = "";
+                artistDropdown.appendChild(div);
+                songInput.disabled = !artistInput.value;
+            });
+        });
+
+        /* Dropdown-Funktionalität für Song anhand des Artists */
+        songInput.addEventListener("input", async () => {
+            const q = songInput.value;
+            const artist = artistInput.value;
+
+            songDropdown.innerHTML = "";
+
+            if (!q || !artist) return;
+
+            const res = await fetch(`/search_songs?q=${q}&artist=${artist}`);
+            const data = await res.json();
+
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.textContent = item.title;
+
+                div.onclick = () => {
+                    songInput.value = item.title;
+                    songInput.dataset.id = item.songid;
+                    songDropdown.innerHTML = "";
+                };
+
+                songDropdown.appendChild(div);
+            });
+        });
+
+        artistInput.addEventListener("change", () => {
+            songInput.value = "";
+        });
+
+        // Guess prüfen
+        const artist_id =  "{{ artist }}";
+        const song_id = "{{ song }}";
+        let attempts = 0;
+        const maxAttempts = 4;
+
+        document.getElementById("guessBtn").addEventListener("click", () => {
+            const artistId = artistInput.dataset.id;   // gespeicherte ID
+            const song = songInput.value.trim();
+
+            attempts++;
+
+            // Prüfen
+            if (parseInt(artistId) === artist_id && song === song_id) {
+                // Gewinn
+                window.location.href = `/win?attempts=${attempts}`;
+                return;
+            }
+
+            // Falsch geraten
+            handleHints(attempts);
+
+            if (attempts > maxAttempts) {
+                alert("Leider verloren");
+                window.location.href = "/dashboard";
+            }
+        });
+
+
+        // Hinweise anzeigen
+        function handleHints(attempts) {
+            if (attempts > 0) {
+                attemptMessage.style.display = "block";
+                attemptMessage.textContent = `Leider falsch! Du hast noch ${maxAttempts - attempts + 1} Versuche übrig.`;
+            }
+
+            if (attempts === 3) {
+                document.getElementById("hint1").style.display = "block";
+            }
+
+            if (attempts === 4) {
+                document.getElementById("hint2").style.display = "block";
+            }
+        }
     </script>
 
 </body>
