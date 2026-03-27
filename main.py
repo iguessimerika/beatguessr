@@ -72,6 +72,12 @@ def logout():
     session.clear()
     return render_template("index.html")
 
+@app.route("/spiel-starten")
+def spiel_starten():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    return render_template("spiel_start.html")
+
 @app.route('/upload')
 def upload_site():
     artists = data.get_artists()
