@@ -115,6 +115,14 @@ def get_songid(title, artist_id):
         songid = cursor.fetchone()['songid']
         
         return int(songid)
+    
+
+def get_songs():
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM song")
+        
+        return cursor.fetchall()
         
         
 def add_hint(message, song_id, hint_number):
@@ -162,3 +170,8 @@ if __name__ == "__main__":
     
     for artist in artists:
         print(f"ArtistId: {artist['artistid']}")
+        
+    songs = get_songs()
+    
+    for song in songs:
+        print(f"SongId: {song['songid']} - Name: {song['title']} - Artist ID: {song['artist_id']}")
