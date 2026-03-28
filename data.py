@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 import utils
 import time
+from flask import jsonify
 
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / 'beatguessr.db'
@@ -19,7 +20,7 @@ def init_database():
         cursor = conn.cursor()
         
         # create table SONG
-        cursor.execute("CREATE TABLE IF NOT EXISTS song (songid INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, artist_id INTEGER, mp3_bindata BLOB)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS song (songid INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, artist_id INTEGER, mp3_filepath TEXT)")
         
         # create table ARTIST
         cursor.execute("CREATE TABLE IF NOT EXISTS artist (artistid INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
@@ -63,10 +64,166 @@ def get_user(email):
         user = cursor.fetchone()
         return user or "no-user"
     
+def get_user_id(username):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT userid FROM user WHERE username = '{username}'")
+        
+        userid = cursor.fetchone()['userid']
+        
+        return int(userid)
+    
+
+def add_artist(name):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO artist (name) VALUES (?)",
+            (name,)
+        )
+        
+        conn.commit()
+        
+        return get_artistid(name)
+    
+    
+def get_artistid(name):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT artistid FROM artist WHERE name = '{name}'")
+        
+        artistid = cursor.fetchone()['artistid']
+        
+        return int(artistid)
+
+
+def get_artists():
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM artist")
+        return cursor.fetchall()
+    
+def search_artists(query):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        
+        if not query:
+            return jsonify([])
+        
+        artists = cursor.execute(
+        "SELECT artistid, name FROM artist WHERE name LIKE ?"
+        , (f"%{query}%",)).fetchall()
+        
+        return jsonify([dict(artist) for artist in artists])
+        
+
+def add_song(title, artist_id, filepath):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO song (title, artist_id, mp3_filepath) VALUES (?, ?, ?)",
+            (title, artist_id, filepath)
+        )
+        
+        conn.commit()
+        
+        return get_songid(title, artist_id)
+        
+
+def get_songid(title, artist_id):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT songid FROM song WHERE title = '{title}' AND artist_id = '{artist_id}'")
+        
+        songid = cursor.fetchone()['songid']
+        
+        return int(songid)
+    
+
+def get_songs():
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM song")
+        
+        return cursor.fetchall()
+    
+
+def search_songs(query, artist):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        
+        if not query or not artist:
+            return jsonify([])
+        
+        songs = cursor.execute("""
+        SELECT song.songid, song.title 
+        FROM song
+        JOIN artist ON song.artist_id = artist.artistid
+        WHERE song.title LIKE ? AND artist.name = ?""", (f"%{query}%", artist)).fetchall()
+        
+        return jsonify([dict(song) for song in songs])
+        
+        
+def add_hint(message, song_id, hint_number):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO hint (hint_text, song_id, hint_number) VALUES (?, ?, ?)",
+            (message, song_id, hint_number)
+        )
+        
+        conn.commit()
+
+def get_song_hints(songid):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        hints = cursor.execute(
+            f"SELECT hint_number, hint_text FROM hint WHERE song_id = '{songid}'"
+            ).fetchall()
+        
+        return hints
+
+
+def add_guess(song_id, user_id, seconds):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO guess (song_id, user_id, seconds) VALUES (?, ?, ?)",
+            (song_id, user_id, seconds)
+        )
+        
+        conn.commit()
+        
+
+def get_song_guesses(song_id):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT user_id, seconds FROM guess WHERE song_id = '{song_id}' ORDER BY seconds ASC")
+        
+        return cursor.fetchall()
+
+
+
+
 if __name__ == "__main__":
+    
+    init_database()
+    
     users = get_users()
     
     for user in users:
         print(f"Name: {user['username']}")
         
-    print(get_user("test@test.de")['password'])
+    artists = get_artists()
+    
+    for artist in artists:
+        print(f"ArtistId: {artist['artistid']}")
+        
+    songs = get_songs()
+    
+    for song in songs:
+        print(f"SongId: {song['songid']} - Name: {song['title']} - Artist ID: {song['artist_id']}")
+
+        guesses = get_song_guesses(song['songid'])
+        for guess in guesses:
+            print(f"  User ID: {guess['user_id']} - Seconds: {guess['seconds']}")
