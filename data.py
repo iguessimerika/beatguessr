@@ -64,6 +64,15 @@ def get_user(email):
         user = cursor.fetchone()
         return user or "no-user"
     
+def get_user_id(username):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT userid FROM user WHERE username = '{username}'")
+        
+        userid = cursor.fetchone()['userid']
+        
+        return int(userid)
+    
 
 def add_artist(name):
     with get_connection() as conn:
@@ -189,7 +198,7 @@ def add_guess(song_id, user_id, seconds):
 def get_song_guesses(song_id):
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute(f"SELECT user_id, seconds FROM guess WHERE song_id = '{song_id}'")
+        cursor.execute(f"SELECT user_id, seconds FROM guess WHERE song_id = '{song_id}' ORDER BY seconds ASC")
         
         return cursor.fetchall()
 
@@ -214,3 +223,7 @@ if __name__ == "__main__":
     
     for song in songs:
         print(f"SongId: {song['songid']} - Name: {song['title']} - Artist ID: {song['artist_id']}")
+
+        guesses = get_song_guesses(song['songid'])
+        for guess in guesses:
+            print(f"  User ID: {guess['user_id']} - Seconds: {guess['seconds']}")

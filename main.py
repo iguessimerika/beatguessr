@@ -96,7 +96,8 @@ def play():
         "data": song_structure,
         "hint1": hints[1],
         "hint2": hints[2],
-        "song_url": url
+        "song_url": url,
+        "username": session['current_username']
     }
     
     return render_template("spiel_start.html", **context)
@@ -122,7 +123,21 @@ def search_songs():
 # Gewonnen Screen
 @app.route("/win")
 def win():
-    pass
+    time = request.args.get("time", None)
+    username = request.args.get("username", None)
+    artist_id = request.args.get("artist_id", None)
+    song_id = request.args.get("song_id", None)
+
+    user_id = data.get_user_id(username)
+
+    data.add_guess(song_id, user_id, time)
+
+    context = {
+        "username": username,
+        "time": time
+    }
+
+    return render_template("win-screen.html", **context)
 
 
 
@@ -165,7 +180,6 @@ def upload():
     hints = [["1", request.form.get('hint1')], ["2", request.form.get('hint2')]]
     
     for hint in hints:
-        print(song_id)
         data.add_hint(hint[1], song_id, hint[0])
     
 

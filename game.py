@@ -32,6 +32,5 @@ def get_hints(songid):
     for hint in hints_db:
         hints[hint['hint_number']] = hint['hint_text']
     
-    print(dict(hints))
     return hints
     

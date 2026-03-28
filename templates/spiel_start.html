@@ -223,7 +223,7 @@
 
             <div class="volume-container">
                 <img src="../static/volume.png" id="volumeIcon" class="volume-icon">
-                <input type="range" id="volumeSlider" min="0" max="100" value="100" class="volume-slider">
+                <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
             </div>
 
             <span id="timeLabel" class="time-label">0:00 / 0:00</span>
@@ -233,6 +233,8 @@
 
         <div id="hint1" class="hint-box">Hinweis 1: {{ hint1 }}</div>
         <div id="hint2" class="hint-box">Hinweis 2: {{ hint2 }}</div>
+
+        <div id="gameTimer" style="margin-top: 15px; font-size: 18px;"></div>
 
     </div>
 
@@ -249,6 +251,22 @@
         const songInput = document.getElementById("songInput");
         const songDropdown = document.getElementById("songDropdown");
         const attemptMessage = document.getElementById("attemptMessage");
+        const gameTimer = document.getElementById("gameTimer");
+        
+        let gameStartTime = null;
+        let timerInterval = null;
+
+        /* Timerfunktion */
+        gameTimer.textContent = "Spielzeit: 0:00";
+
+        window.addEventListener("load", () => {
+            gameStartTime = Date.now();
+
+            timerInterval = setInterval(() => {
+                const elapsedSec = Math.floor((Date.now() - gameStartTime) / 1000);
+                gameTimer.textContent = `Spielzeit: ${formatTime(elapsedSec)}`;
+            }, 1000);
+        });
 
         /* Play/Pause */
         playPauseBtn.addEventListener("click", () => {
@@ -361,14 +379,17 @@
 
         document.getElementById("guessBtn").addEventListener("click", () => {
             const artistId = artistInput.dataset.id;   // gespeicherte ID
-            const song = songInput.value.trim();
+            const song = songInput.dataset.id;          // gespeicherte ID
 
             attempts++;
-
+            
             // Prüfen
-            if (parseInt(artistId) === artist_id && song === song_id) {
+            if (parseInt(artistId) === parseInt(artist_id) && parseInt(song) === parseInt(song_id)) {
+                // Stoppe den Timer
+                clearInterval(timerInterval);
+
                 // Gewinn
-                window.location.href = `/win?attempts=${attempts}`;
+                window.location.href = `/win?username={{ username }}&artist_id=${artist_id}&song_id=${song_id}&time=${Math.floor((Date.now() - gameStartTime) / 1000)}`;
                 return;
             }
 
