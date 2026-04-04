@@ -131,10 +131,15 @@ def win():
     user_id = data.get_user_id(username)
 
     data.add_guess(song_id, user_id, time)
+    
+    artist = data.get_artist_name(artist_id)
+    title = data.get_song_title(song_id)
 
     context = {
         "username": username,
-        "time": time
+        "time": time,
+        "artist": artist,
+        "title": title
     }
 
     return render_template("win-screen.html", **context)
