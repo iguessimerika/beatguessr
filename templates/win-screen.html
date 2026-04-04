@@ -212,13 +212,16 @@
 
             <div class="confetti" aria-hidden="true" id="confetti"></div>
 
-            <!-- Angepasster Titel: zeigt Songname und Artist -->
+            <!-- Robustere Ermittlung des Titels/Artists und sicheres Escaping -->
+            {% set display_title = song_name or song_title or title or track or 'Unbekannter Song' %}
+            {% set display_artist = artist or performer or 'Unbekannter Künstler' %}
+
             <h1 id="win-title" class="title-pulse">
                 Korrekt, das war
                 <span style="display:block; margin-top:8px; font-size:1.05em; font-weight:800;">
-                    {{ title or 'Unbekannter Song' }}
-                    <span style="font-weight:600; color:var(--muted);">von</span>
-                    {{ artist or 'Unbekannter Künstler' }}
+                    {{ display_title | e }}
+                    <span style="font-weight:600; color:var(--muted); margin: 0 8px;">von</span>
+                    {{ display_artist | e }}
                 </span>
             </h1>
 
@@ -234,11 +237,6 @@
                     <h3>Zeit</h3>
                     <p>{{ time }} Sekunden</p>
                 </div>
-
-                <div class="score-item" aria-label="Punkte">
-                    <h3>Punkte</h3>
-                    <p>{{ score or '—' }}</p>
-                </div>
             </div>
 
             <div class="actions">
@@ -251,7 +249,7 @@
 
         <!-- Ursprünglicher, einfacher Win-Screen (als Fallback / Referenz) -->
         <div class="simple-container" id="simpleFallback">
-            <h1>Korrekt, das war {{ song_name or 'Unbekannter Song' }} von {{ artist or 'Unbekannter Künstler' }}</h1>
+            <h1>Korrekt, das war {{ display_title | e }} von {{ display_artist | e }}</h1>
             <p>Du hast {{ time }} Sekunden gebraucht!</p>
             <button onclick="playAgain()">Nochmal spielen</button>
         </div>
@@ -287,4 +285,5 @@
     </script>
 </body>
 </html>
+
 
