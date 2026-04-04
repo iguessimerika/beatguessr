@@ -95,6 +95,15 @@ def get_artistid(name):
         artistid = cursor.fetchone()['artistid']
         
         return int(artistid)
+    
+def get_artist_name(artistid):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT name FROM artist WHERE artistid = '{artistid}'")
+        
+        name = cursor.fetchone()['name']
+        
+        return name
 
 
 def get_artists():
@@ -138,6 +147,15 @@ def get_songid(title, artist_id):
         songid = cursor.fetchone()['songid']
         
         return int(songid)
+    
+def get_song_title(songid):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT title FROM song WHERE songid = '{songid}'")
+        
+        title = cursor.fetchone()['title']
+        
+        return title
     
 
 def get_songs():
