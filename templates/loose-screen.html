@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BeatGuessr – Verloren</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+
+    <style>
+        :root{
+            --panel-bg: rgba(0,0,0,0.55);
+            --accent: #ff6b6b;
+            --accent-2: #667eea;
+            --text: #ffffff;
+            --muted: rgba(255,255,255,0.85);
+        }
+
+        *{box-sizing:border-box;margin:0;padding:0}
+
+        html,body{
+            height:100%;
+            font-family: 'Segoe UI', system-ui, -apple-system, "Helvetica Neue", Arial;
+            color:var(--text);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+        }
+
+        body{
+            background-image: url("{{ url_for('static', filename='beatgussr-background.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:24px;
+        }
+
+        .page-wrap{
+            width:100%;
+            max-width:900px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+        }
+
+        .lose-panel{
+            width: min(92%, 720px);
+            background: var(--panel-bg);
+            backdrop-filter: blur(6px) saturate(120%);
+            border-radius: 16px;
+            padding: 36px;
+            text-align:center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+            position:relative;
+            overflow:hidden;
+            animation: panelIn 0.5s ease;
+        }
+
+        @keyframes panelIn {
+            from { opacity:0; transform: translateY(8px) scale(0.995); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
+        }
+
+        .title-sad{
+            font-size: clamp(24px, 4.5vw, 44px);
+            font-weight:800;
+            margin-bottom:8px;
+            display:inline-block;
+            color: #fff;
+            text-shadow: 0 6px 18px rgba(0,0,0,0.6);
+            animation: shake 0.9s ease-in-out 1;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
+        }
+
+        .subtitle{
+            color:var(--muted);
+            margin-bottom:18px;
+            font-weight:500;
+        }
+
+        .reveal-box{
+            margin: 14px auto 22px;
+            max-width:640px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+            border-radius:12px;
+            padding:16px 18px;
+            display:flex;
+            gap:14px;
+            align-items:center;
+            justify-content:center;
+            flex-wrap:wrap;
+        }
+
+        .reveal-text{
+            text-align:center;
+        }
+
+        .reveal-text h3{
+            margin-bottom:6px;
+            font-size:14px;
+            color:var(--muted);
+            font-weight:600;
+        }
+
+        .reveal-text p{
+            font-size:20px;
+            font-weight:800;
+            color:var(--text);
+            margin:0;
+        }
+
+        .actions{
+            display:flex;
+            gap:14px;
+            justify-content:center;
+            flex-wrap:wrap;
+            margin-top:6px;
+        }
+
+        .btn{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            padding:12px 22px;
+            border-radius:10px;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            color:#111;
+            font-weight:700;
+            text-decoration:none;
+            border:1px solid rgba(0,0,0,0.08);
+            cursor:pointer;
+            min-width:160px;
+            transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+        }
+
+        .btn:hover{
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        .btn-ghost{
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            color:var(--text);
+            min-width:160px;
+        }
+
+        .btn-primary{
+            background: linear-gradient(90deg, var(--accent-2), var(--accent));
+            color: #fff;
+            border: none;
+            box-shadow: 0 8px 20px rgba(102,126,234,0.18);
+        }
+
+        .btn-try{
+            background: linear-gradient(90deg, #ff9a9e, var(--accent));
+            color: #fff;
+            border: none;
+            box-shadow: 0 8px 20px rgba(255,107,107,0.12);
+        }
+
+        .small-note{
+            color:var(--muted);
+            margin-top:12px;
+            font-size:0.95rem;
+        }
+
+        /* Fallback: einfacher Container (versteckt) */
+        .simple-container {
+            display:none;
+            text-align:center;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+
+        .simple-container h1 { font-size:2.2em; margin-bottom:12px; }
+        .simple-container p { color:#666; margin-bottom:18px; font-size:1.05em; }
+
+        @media (max-width:520px){
+            .reveal-text p{ font-size:18px; }
+            .btn{ min-width:140px; padding:10px 14px; }
+            .lose-panel{ padding:22px; border-radius:12px; }
+            .simple-container { padding:20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <div class="lose-panel" role="region" aria-labelledby="lose-title">
+
+            <h1 id="lose-title" class="title-sad">Schade — leider falsch</h1>
+
+            <p class="subtitle">Nicht schlimm, üben hilft. Hier ist die richtige Antwort:</p>
+
+            <!-- Robustere Ermittlung des Titels/Artists und sicheres Escaping -->
+            {% set display_title = song_name or song_title or title or track or 'Unbekannter Song' %}
+            {% set display_artist = artist or performer or 'Unbekannter Künstler' %}
+
+            <div class="reveal-box" aria-live="polite" aria-label="Richtige Antwort">
+                <div class="reveal-text" role="note">
+                    <h3>Richtig war</h3>
+                    <p>{{ display_title | e }}</p>
+                    <div style="font-weight:600; color:var(--muted); margin-top:6px;">von {{ display_artist | e }}</div>
+                </div>
+            </div>
+
+            <div class="score-box" aria-hidden="false" style="margin-bottom:6px;">
+                <div class="score-item" aria-label="Spieler" style="display:inline-block; margin-right:12px;">
+                    <h3>Spieler</h3>
+                    <p>{{ username or 'Gast' }}</p>
+                </div>
+
+                <div class="score-item" aria-label="Benötigte Zeit" style="display:inline-block;">
+                    <h3>Zeit</h3>
+                    <p>{{ time }} Sekunden</p>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="/play" class="btn btn-try" role="button" aria-label="Nochmal spielen">🔁 Nochmal versuchen</a>
+                <a href="/dashboard" class="btn btn-ghost" role="button" aria-label="Zum Dashboard">🏠 Zum Dashboard</a>
+                <a href="/highscores" class="btn" role="button" aria-label="Highscores ansehen">🏆 Highscores</a>
+            </div>
+
+            <div class="small-note" role="note">
+                Tipp: Je schneller du den Song errätst, desto besser steht du in den Highscores.
+            </div>
+
+        </div>
+
+        <!-- Einfacher Fallback -->
+        <div class="simple-container" id="simpleFallback">
+            <h1>Schade — leider falsch</h1>
+            <p>Richtig war: {{ display_title | e }} von {{ display_artist | e }}</p>
+            <p>Du hast {{ time }} Sekunden gebraucht.</p>
+            <button onclick="playAgain()">Nochmal spielen</button>
+        </div>
+    </div>
+
+    <script>
+        // Fallback-Funktion für "Nochmal spielen"
+        function playAgain() {
+            window.location.href = '/play';
+        }
+
+        // Optional: kleine visuelle Bestätigung (kurzes Pulsieren der Reveal-Box)
+        (function pulseReveal(){
+            const box = document.querySelector('.reveal-box');
+            if(!box) return;
+            box.animate([
+                { transform: 'scale(0.995)', opacity: 0.95 },
+                { transform: 'scale(1)', opacity: 1 },
+                { transform: 'scale(0.998)', opacity: 0.98 }
+            ], {
+                duration: 700,
+                easing: 'ease-out'
+            });
+        })();
+    </script>
+</body>
+</html>
