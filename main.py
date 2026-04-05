@@ -72,6 +72,9 @@ def logout():
     session.clear()
     return render_template("index.html")
 
+
+
+
 # Spiel starten
 @app.route("/play")
 def play():
