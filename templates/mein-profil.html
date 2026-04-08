@@ -1,177 +1,143 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard – Mein Profil</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Hier deine bestehende CSS-Datei einbinden -->
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeatGuessr – Mein Profil</title>
+
+    <link rel="icon" type="image/png" href="../static/favicon.png">
+
+    <style>
+        body {
+            background-image: url("../static/beatgussr-background.png");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+
+            font-family: 'Segoe UI', sans-serif;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .profile-container {
+            background: rgba(0, 0, 0, 0.55);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(6px);
+            width: 450px;
+            text-align: center;
+        }
+
+        .title-pulse {
+            animation: pulse 1.8s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        .section-title {
+            font-size: 22px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: 600;
+            color: black;
+            text-decoration: none;
+            width: 250px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .btn:hover {
+            background: #e6e6e6;
+        }
+
+        .input-field {
+            width: 90%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: white;
+            color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 42px;
+            font-weight: 700;
+            margin: 0 auto 15px auto;
+        }
+
+        .small-btn {
+            padding: 8px;
+            font-size: 14px;
+            width: 180px;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="dashboard-layout">
-    <!-- Sidebar (wie auf den anderen Seiten) -->
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <span class="logo-text">Mein Dashboard</span>
-      </div>
-      <nav class="sidebar-nav">
-        <a href="dashboard.html" class="nav-item">Übersicht</a>
-        <a href="statistiken.html" class="nav-item">Statistiken</a>
-        <a href="einstellungen.html" class="nav-item">Einstellungen</a>
-        <a href="profil.html" class="nav-item active">Mein Profil</a>
-      </nav>
-    </aside>
 
-    <!-- Hauptbereich -->
-    <main class="main-content">
-      <!-- Kopfzeile / Breadcrumb -->
-      <header class="page-header">
-        <div>
-          <h1 class="page-title">Mein Profil</h1>
-          <p class="page-subtitle">Verwalte deine persönlichen Daten und Kontoeinstellungen.</p>
-        </div>
-        <div class="page-header-actions">
-          <button class="btn-secondary" type="button">Abmelden</button>
-        </div>
-      </header>
+    <div class="profile-container">
 
-      <!-- Inhalt -->
-      <section class="grid-2">
-        <!-- Profilkarte links -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Profilübersicht</h2>
-          </div>
-          <div class="card-body profile-overview">
-            <div class="profile-avatar">
-              <!-- Platzhalter-Profilbild -->
-              <div class="avatar-circle">AB</div>
-              <button class="btn-secondary btn-small" type="button">
-                Profilbild ändern
-              </button>
-            </div>
-            <div class="profile-info">
-              <p><strong>Benutzername:</strong> demo.user</p>
-              <p><strong>Rolle:</strong> Administrator</p>
-              <p><strong>Letzte Anmeldung:</strong> 05.04.2026, 19:42</p>
-              <p><strong>Status:</strong> Aktiv</p>
-            </div>
-          </div>
+        <h1 class="title-pulse" style="font-size: 42px;">Mein Profil</h1>
+        <h2 style="margin-top: -10px; font-weight: 400;">Hallo, {{name}}!</h2>
+
+        <div class="avatar">
+            {{name[0]}}
         </div>
 
-        <!-- Stammdaten rechts -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Persönliche Daten</h2>
-          </div>
-          <div class="card-body">
-            <form id="profileForm">
-              <div class="form-row">
-                <label for="firstName">Vorname</label>
-                <input type="text" id="firstName" name="firstName" placeholder="Max" value="Max">
-              </div>
-              <div class="form-row">
-                <label for="lastName">Nachname</label>
-                <input type="text" id="lastName" name="lastName" placeholder="Mustermann" value="Mustermann">
-              </div>
-              <div class="form-row">
-                <label for="email">E-Mail-Adresse</label>
-                <input type="email" id="email" name="email" placeholder="max.mustermann@example.com" value="max.mustermann@example.com">
-              </div>
-              <div class="form-row">
-                <label for="username">Benutzername</label>
-                <input type="text" id="username" name="username" placeholder="demo.user" value="demo.user">
-              </div>
-              <div class="form-actions">
-                <button class="btn-primary" type="submit">Änderungen speichern</button>
-                <button class="btn-ghost" type="reset">Zurücksetzen</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
+        <p class="section-title">Deine Daten</p>
 
-      <!-- Passwort-Bereich -->
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title">Passwort ändern</h2>
-        </div>
-        <div class="card-body">
-          <form id="passwordForm">
-            <div class="form-row">
-              <label for="currentPassword">Aktuelles Passwort</label>
-              <input type="password" id="currentPassword" name="currentPassword" placeholder="••••••••">
-            </div>
-            <div class="form-row">
-              <label for="newPassword">Neues Passwort</label>
-              <input type="password" id="newPassword" name="newPassword" placeholder="••••••••">
-            </div>
-            <div class="form-row">
-              <label for="confirmPassword">Neues Passwort bestätigen</label>
-              <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••">
-            </div>
-            <div class="form-actions">
-              <button class="btn-primary" type="submit">Passwort aktualisieren</button>
-            </div>
-          </form>
-        </div>
-      </section>
+        <form method="POST" action="/profil/update">
 
-      <!-- Optionale Einstellungen -->
-      <section class="grid-2">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">Kontoeinstellungen</h2>
-          </div>
-          <div class="card-body">
-            <div class="form-row form-row-inline">
-              <label for="language">Sprache</label>
-              <select id="language" name="language">
-                <option value="de" selected>Deutsch</option>
-                <option value="en">Englisch</option>
-              </select>
-            </div>
-            <div class="form-row form-row-inline">
-              <label for="theme">Design</label>
-              <select id="theme" name="theme">
-                <option value="light">Hell</option>
-                <option value="dark">Dunkel</option>
-                <option value="system" selected>Systemstandard</option>
-              </select>
-            </div>
-          </div>
-        </div>
+            <input class="input-field" type="text" name="username" value="{{username}}" placeholder="Benutzername">
+            <input class="input-field" type="email" name="email" value="{{email}}" placeholder="E-Mail">
 
-        <div class="card danger">
-          <div class="card-header">
-            <h2 class="card-title">Konto & Sicherheit</h2>
-          </div>
-          <div class="card-body">
-            <p>Hier kannst du sicherheitsrelevante Aktionen für dein Konto durchführen.</p>
-            <button class="btn-secondary" type="button">Zwei-Faktor-Authentifizierung verwalten</button>
-            <button class="btn-danger" type="button">Konto deaktivieren</button>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
+            <button class="btn small-btn" type="submit">Änderungen speichern</button>
+        </form>
 
-  <!-- Optional: JS für Form-Handling -->
-  <script>
-    const profileForm = document.getElementById('profileForm');
-    const passwordForm = document.getElementById('passwordForm');
+        <p class="section-title">Passwort ändern</p>
 
-    profileForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      // Hier später: AJAX/Fetch zum Backend
-      alert('Profil wurde (demo) gespeichert.');
-    });
+        <form method="POST" action="/profil/password">
 
-    passwordForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      // Hier später: Passwort-Validierung & Backend-Call
-      alert('Passwort wurde (demo) aktualisiert.');
-    });
-  </script>
+            <input class="input-field" type="password" name="old_pw" placeholder="Aktuelles Passwort">
+            <input class="input-field" type="password" name="new_pw" placeholder="Neues Passwort">
+
+            <button class="btn small-btn" type="submit">Passwort aktualisieren</button>
+        </form>
+
+        <p class="section-title">Navigation</p>
+
+        <a href="/dashboard" class="btn">⬅️ Zurück zum Dashboard</a>
+        <a href="/logout" class="btn">🚪 Logout</a>
+
+    </div>
+
 </body>
 </html>
