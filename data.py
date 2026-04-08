@@ -163,7 +163,7 @@ def search_artists(query):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(
-                "SELECT artistid, name FROM artist WHERE name ILIKE %s",
+                "SELECT artistid, name FROM artist WHERE LOWER(name) ILIKE LOWER(%s)",
                 (f"%{query}%",)
             )
             artists = cursor.fetchall()
@@ -220,7 +220,7 @@ def search_songs(query, artist):
                 SELECT song.songid, song.title
                 FROM song
                 JOIN artist ON song.artist_id = artist.artistid
-                WHERE song.title ILIKE %s AND artist.name = %s
+                WHERE LOWER(song.title) ILIKE LOWER(%s) AND LOWER(artist.name) = LOWER(%s)
             """, (f"%{query}%", artist))
             songs = cursor.fetchall()
             return jsonify([dict(song) for song in songs])
