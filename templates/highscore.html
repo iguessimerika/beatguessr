@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeatGuessr – Highscores</title>
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='beatgussr-background.png') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+
+            font-family: 'Segoe UI', sans-serif;
+
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 40px;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .highscore-container {
+            background: rgba(0, 0, 0, 0.55);
+            padding: 35px;
+            border-radius: 15px;
+            backdrop-filter: blur(6px);
+            width: 700px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+        }
+
+        h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            animation: pulse 1.8s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        .song-block {
+            background: rgba(255,255,255,0.06);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .song-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .score-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .score-list li {
+            background: rgba(255,255,255,0.12);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: 600;
+            color: black;
+            text-decoration: none;
+            width: 250px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #e6e6e6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="highscore-container">
+
+        <h1>🏆 Highscores</h1>
+        <p style="margin-top:-5px; margin-bottom:20px; font-size:18px; opacity:0.85;">
+            Die schnellsten Spieler pro Song
+        </p>
+
+        {% for song, entries in highscores.items() %}
+        <div class="song-block">
+            <div class="song-title">{{ song }}</div>
+
+            <ul class="score-list">
+                {% for entry in entries %}
+                <li>
+                    <span>{{ entry.username }}</span>
+                    <span>{{ entry.time }} Sekunden</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+
+        <a href="/dashboard" class="btn">⬅️ Zurück zum Dashboard</a>
+
+    </div>
+
+</body>
+</html>
