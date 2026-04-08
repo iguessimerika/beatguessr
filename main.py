@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, session, redirect, url_for, send_from_directory, jsonify
-import data, utils, os, game
+import data, utils, os, game, sys
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # wichtig für Sessions!
@@ -145,9 +145,9 @@ def play():
 @app.route("/search_artists")
 def search_artists():
     query = request.args.get("q", "")
-    print(query)
+    print(f"DEBUG: {query}", flush=True)
     artists = data.search_artists(query)
-    print(artists)
+    print(f"DEBUG: {artists}", flush=True)
     
     return artists
 
