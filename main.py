@@ -1,3 +1,5 @@
+import email
+
 from flask import Flask, request, render_template, session, redirect, url_for, send_from_directory, jsonify
 import data, utils, os, game
 
@@ -80,9 +82,16 @@ def profil():
     
     username = session['current_username']
     user_id = data.get_user_id(username)
+
+    userdata = data.get_user_by_id(user_id)
     
     context = {
-        "username": username
+        "username": username,
+        "email": userdata['email'],
+        "register_date": utils.format_date(userdata['register_date']),
+        "firstname": userdata['firstname'],
+        "lastname": userdata['lastname'],
+        "profile_picture": userdata['profile_picture']
     }
     
     return render_template("mein-profil.html", **context)
@@ -235,4 +244,4 @@ def upload():
 
 if __name__ == "__main__":
     app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # max. 10 MB
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
