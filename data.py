@@ -167,7 +167,7 @@ def search_artists(query):
                 (f"%{query}%",)
             )
             artists = cursor.fetchall()
-            return jsonify([dict(artist) for artist in artists])
+            return jsonify(artists)
 
 
 def add_song(title, artist_id, filepath):
