@@ -225,12 +225,12 @@ def get_song_guesses(song_id):
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(f"""
-        SELECT user.username, MIN(guess.seconds)
+        SELECT user.username, MIN(guess.seconds) as best_time
         FROM guess
         JOIN user ON guess.user_id = user.userid
         WHERE song_id = '{song_id}' 
         GROUP BY user.username
-        ORDER BY seconds ASC""")
+        ORDER BY best_time ASC""")
         
         return cursor.fetchall()
 
