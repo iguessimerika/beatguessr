@@ -322,7 +322,7 @@
 
             if (!q) return;
 
-            const res = await fetch(`/search_songs?q=${encodeURIComponent(q)}`);
+            const res = await fetch(`/search_artists?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             
             data.forEach(item => {
