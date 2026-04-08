@@ -26,7 +26,7 @@ def init_database():
         cursor.execute("CREATE TABLE IF NOT EXISTS artist (artistid INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
         
         # create table USER
-        cursor.execute("CREATE TABLE IF NOT EXISTS user (userid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, register_date INTEGER, email TEXT, firstname TEXT, lastname TEXT, profile_picture TEXT, active INTEGER DEFAULT 1)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS user (userid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, register_date INTEGER, email TEXT, profile_picture TEXT)")
 
         # create table HINT
         cursor.execute("CREATE TABLE IF NOT EXISTS hint (hintid INTEGER PRIMARY KEY AUTOINCREMENT, song_id INTEGER, hint_number INTEGER, hint_text TEXT)")

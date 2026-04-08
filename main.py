@@ -88,9 +88,6 @@ def profil():
     context = {
         "username": username,
         "email": userdata['email'],
-        "register_date": utils.format_date(userdata['register_date']),
-        "firstname": userdata['firstname'],
-        "lastname": userdata['lastname'],
         "profile_picture": userdata['profile_picture']
     }
     
