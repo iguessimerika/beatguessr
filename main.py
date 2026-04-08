@@ -6,12 +6,11 @@ app.secret_key = "supersecretkey"  # wichtig für Sessions!
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.before_first_request
-def setup():
-    data.init_database()
 
 @app.route("/")
 def home():
+    data.init_database()
+
     if not session.get('logged_in'):
         return render_template("index.html")
     return render_template("dashboard.html")
