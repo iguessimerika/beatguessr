@@ -72,7 +72,20 @@ def logout():
     session.clear()
     return render_template("index.html")
 
-
+# Mein Profil
+@app.route("/profil")
+def profil():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    
+    username = session['current_username']
+    user_id = data.get_user_id(username)
+    
+    context = {
+        "username": username
+    }
+    
+    return render_template("mein-profil.html", **context)
 
 
 # Spiel starten

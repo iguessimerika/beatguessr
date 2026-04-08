@@ -397,8 +397,7 @@
             handleHints(attempts);
 
             if (attempts > maxAttempts) {
-                alert("Leider verloren");
-                window.location.href = "/dashboard";
+                window.location.href = `/loose?username={{ username }}&artist_id=${artist_id}&song_id=${song_id}&time=${Math.floor((Date.now() - gameStartTime) / 1000)}`;
             }
         });
 
