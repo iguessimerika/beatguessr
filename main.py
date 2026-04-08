@@ -72,6 +72,22 @@ def logout():
     session.clear()
     return render_template("index.html")
 
+# Mein Profil
+@app.route("/profil")
+def profil():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    
+    username = session['current_username']
+    user_id = data.get_user_id(username)
+    
+    context = {
+        "username": username
+    }
+    
+    return render_template("mein-profil.html", **context)
+
+
 # Spiel starten
 @app.route("/play")
 def play():
@@ -143,6 +159,32 @@ def win():
     }
 
     return render_template("win-screen.html", **context)
+
+#verloren Screen
+
+# Gewonnen Screen
+@app.route("/loose")
+def loose():
+    time = request.args.get("time", None)
+    username = request.args.get("username", None)
+    artist_id = request.args.get("artist_id", None)
+    song_id = request.args.get("song_id", None)
+
+    user_id = data.get_user_id(username)
+
+    data.add_guess(song_id, user_id, time)
+    
+    artist = data.get_artist_name(artist_id)
+    title = data.get_song_title(song_id)
+
+    context = {
+        "username": username,
+        "time": time,
+        "artist": artist,
+        "title": title
+    }
+
+    return render_template("loose-screen.html", **context)
 
 
 

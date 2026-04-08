@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard – Mein Profil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Hier deine bestehende CSS-Datei einbinden -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar (wie auf den anderen Seiten) -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-text">Mein Dashboard</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item">Übersicht</a>
+        <a href="statistiken.html" class="nav-item">Statistiken</a>
+        <a href="einstellungen.html" class="nav-item">Einstellungen</a>
+        <a href="profil.html" class="nav-item active">Mein Profil</a>
+      </nav>
+    </aside>
+
+    <!-- Hauptbereich -->
+    <main class="main-content">
+      <!-- Kopfzeile / Breadcrumb -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Mein Profil</h1>
+          <p class="page-subtitle">Verwalte deine persönlichen Daten und Kontoeinstellungen.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn-secondary" type="button">Abmelden</button>
+        </div>
+      </header>
+
+      <!-- Inhalt -->
+      <section class="grid-2">
+        <!-- Profilkarte links -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Profilübersicht</h2>
+          </div>
+          <div class="card-body profile-overview">
+            <div class="profile-avatar">
+              <!-- Platzhalter-Profilbild -->
+              <div class="avatar-circle">AB</div>
+              <button class="btn-secondary btn-small" type="button">
+                Profilbild ändern
+              </button>
+            </div>
+            <div class="profile-info">
+              <p><strong>Benutzername:</strong> demo.user</p>
+              <p><strong>Rolle:</strong> Administrator</p>
+              <p><strong>Letzte Anmeldung:</strong> 05.04.2026, 19:42</p>
+              <p><strong>Status:</strong> Aktiv</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stammdaten rechts -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Persönliche Daten</h2>
+          </div>
+          <div class="card-body">
+            <form id="profileForm">
+              <div class="form-row">
+                <label for="firstName">Vorname</label>
+                <input type="text" id="firstName" name="firstName" placeholder="Max" value="Max">
+              </div>
+              <div class="form-row">
+                <label for="lastName">Nachname</label>
+                <input type="text" id="lastName" name="lastName" placeholder="Mustermann" value="Mustermann">
+              </div>
+              <div class="form-row">
+                <label for="email">E-Mail-Adresse</label>
+                <input type="email" id="email" name="email" placeholder="max.mustermann@example.com" value="max.mustermann@example.com">
+              </div>
+              <div class="form-row">
+                <label for="username">Benutzername</label>
+                <input type="text" id="username" name="username" placeholder="demo.user" value="demo.user">
+              </div>
+              <div class="form-actions">
+                <button class="btn-primary" type="submit">Änderungen speichern</button>
+                <button class="btn-ghost" type="reset">Zurücksetzen</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- Passwort-Bereich -->
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Passwort ändern</h2>
+        </div>
+        <div class="card-body">
+          <form id="passwordForm">
+            <div class="form-row">
+              <label for="currentPassword">Aktuelles Passwort</label>
+              <input type="password" id="currentPassword" name="currentPassword" placeholder="••••••••">
+            </div>
+            <div class="form-row">
+              <label for="newPassword">Neues Passwort</label>
+              <input type="password" id="newPassword" name="newPassword" placeholder="••••••••">
+            </div>
+            <div class="form-row">
+              <label for="confirmPassword">Neues Passwort bestätigen</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••">
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" type="submit">Passwort aktualisieren</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Optionale Einstellungen -->
+      <section class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Kontoeinstellungen</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-row form-row-inline">
+              <label for="language">Sprache</label>
+              <select id="language" name="language">
+                <option value="de" selected>Deutsch</option>
+                <option value="en">Englisch</option>
+              </select>
+            </div>
+            <div class="form-row form-row-inline">
+              <label for="theme">Design</label>
+              <select id="theme" name="theme">
+                <option value="light">Hell</option>
+                <option value="dark">Dunkel</option>
+                <option value="system" selected>Systemstandard</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card danger">
+          <div class="card-header">
+            <h2 class="card-title">Konto & Sicherheit</h2>
+          </div>
+          <div class="card-body">
+            <p>Hier kannst du sicherheitsrelevante Aktionen für dein Konto durchführen.</p>
+            <button class="btn-secondary" type="button">Zwei-Faktor-Authentifizierung verwalten</button>
+            <button class="btn-danger" type="button">Konto deaktivieren</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Optional: JS für Form-Handling -->
+  <script>
+    const profileForm = document.getElementById('profileForm');
+    const passwordForm = document.getElementById('passwordForm');
+
+    profileForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      // Hier später: AJAX/Fetch zum Backend
+      alert('Profil wurde (demo) gespeichert.');
+    });
+
+    passwordForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      // Hier später: Passwort-Validierung & Backend-Call
+      alert('Passwort wurde (demo) aktualisiert.');
+    });
+  </script>
+</body>
+</html>
