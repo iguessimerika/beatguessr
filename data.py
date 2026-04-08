@@ -9,7 +9,7 @@ from flask import jsonify
 import utils
 
 BASE_DIR = Path(__file__).resolve().parent
-DATABASE_URL = os.getenv("postgresql://postgres:uidhgJUwAzZDzjbZPgkPNyinwXmwomkI@mainline.proxy.rlwy.net:58894/railway")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 def get_connection():
