@@ -94,6 +94,39 @@ def profil():
     return render_template("mein-profil.html", **context)
 
 
+# Highscores
+@app.route("/highscores")
+def highscores():
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    
+    username = session['current_username']
+    user_id = data.get_user_id(username)
+
+    # highscores = {
+    #     "Song A": [
+    #         {"username": "Max", "time": 12.5},
+    #         {"username": "Anna", "time": 15.2},
+    #         {"username": "Tom", "time": 18.7}
+    #     ],
+    #     "Song B": [
+    #         {"username": "Lisa", "time": 9.8},
+    #         {"username": "Paul", "time": 11.3}
+    #     ],
+    #     "Song C": [
+    #         {"username": "Chris", "time": 14.1}
+    #     ]
+    # }
+    
+    highscores = game.build_highscore_structure(user_id)
+
+    context = {
+        "highscores": highscores
+    }
+    
+    return render_template("highscore.html", **context)
+
+
 # Spiel starten
 @app.route("/play")
 def play():
@@ -166,9 +199,7 @@ def win():
 
     return render_template("win-screen.html", **context)
 
-#verloren Screen
-
-# Gewonnen Screen
+# Verloren Screen
 @app.route("/loose")
 def loose():
     time = request.args.get("time", None)

@@ -224,10 +224,26 @@ def add_guess(song_id, user_id, seconds):
 def get_song_guesses(song_id):
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute(f"SELECT user_id, seconds FROM guess WHERE song_id = '{song_id}' ORDER BY seconds ASC")
+        cursor.execute(f"""
+        SELECT user.username, guess.seconds 
+        FROM guess
+        JOIN user ON guess.user_id = user.userid
+        WHERE song_id = '{song_id}' ORDER BY seconds ASC""")
         
         return cursor.fetchall()
 
+
+def get_user_songs(user_id):
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        songs = cursor.execute(f"""
+        SELECT DISTINCT guess.song_id, song.title, artist.name
+        FROM guess
+        JOIN song ON guess.song_id = song.songid
+        JOIN artist ON song.artist_id = artist.artistid
+        WHERE user_id = '{user_id}'""").fetchall()
+
+        return [dict(song) for song in songs]
 
 
 

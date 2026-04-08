@@ -33,4 +33,29 @@ def get_hints(songid):
         hints[hint['hint_number']] = hint['hint_text']
     
     return hints
+
+def build_highscore_structure(user_id):
+    songs = data.get_user_songs(user_id)
+
+    print(songs)
+
+    structure = {}
+    
+    for song in songs:
+        songid = song['song_id']
+        title = song['name'] + " - " + song['title']
+        song_guesses = dict(data.get_song_guesses(songid))
+
+        for username in song_guesses:
+            time = song_guesses[username]
+
+            if title not in structure:
+                structure[title] = []
+    
+            structure[title].append({
+                "username": username,
+                "time": time
+            })
+
+    return structure
     
