@@ -1,5 +1,3 @@
-import email
-
 from flask import Flask, request, render_template, session, redirect, url_for, send_from_directory, jsonify
 import data, utils, os, game
 
@@ -8,10 +6,12 @@ app.secret_key = "supersecretkey"  # wichtig für Sessions!
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+@app.before_first_request
+def setup():
+    data.init_database()
+
 @app.route("/")
 def home():
-    data.init_database()
-    
     if not session.get('logged_in'):
         return render_template("index.html")
     return render_template("dashboard.html")
@@ -102,21 +102,6 @@ def highscores():
     
     username = session['current_username']
     user_id = data.get_user_id(username)
-
-    # highscores = {
-    #     "Song A": [
-    #         {"username": "Max", "time": 12.5},
-    #         {"username": "Anna", "time": 15.2},
-    #         {"username": "Tom", "time": 18.7}
-    #     ],
-    #     "Song B": [
-    #         {"username": "Lisa", "time": 9.8},
-    #         {"username": "Paul", "time": 11.3}
-    #     ],
-    #     "Song C": [
-    #         {"username": "Chris", "time": 14.1}
-    #     ]
-    # }
     
     highscores = game.build_highscore_structure(user_id)
 

@@ -1,253 +1,291 @@
-import sqlite3
-from pathlib import Path
-import utils
+import os
 import time
+from pathlib import Path
+
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from flask import jsonify
 
+import utils
+
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / 'beatguessr.db'
-
-def get_connection() -> sqlite3.Connection:
-    
-    connection = sqlite3.connect(DB_PATH)
-    connection .row_factory = sqlite3.Row
-    return connection
+DATABASE_URL = os.getenv("postgresql://postgres:uidhgJUwAzZDzjbZPgkPNyinwXmwomkI@mainline.proxy.rlwy.net:58894/railway")
 
 
-    
+def get_connection():
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL ist nicht gesetzt.")
+
+    return psycopg2.connect(DATABASE_URL, sslmode="require")
+
+
 def init_database():
     with get_connection() as conn:
-        cursor = conn.cursor()
-        
-        # create table SONG
-        cursor.execute("CREATE TABLE IF NOT EXISTS song (songid INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, artist_id INTEGER, mp3_filepath TEXT)")
-        
-        # create table ARTIST
-        cursor.execute("CREATE TABLE IF NOT EXISTS artist (artistid INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
-        
-        # create table USER
-        cursor.execute("CREATE TABLE IF NOT EXISTS user (userid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, register_date INTEGER, email TEXT, profile_picture TEXT)")
+        with conn.cursor() as cursor:
+            # create table ARTIST
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS artist (
+                    artistid SERIAL PRIMARY KEY,
+                    name TEXT
+                )
+            """)
 
-        # create table HINT
-        cursor.execute("CREATE TABLE IF NOT EXISTS hint (hintid INTEGER PRIMARY KEY AUTOINCREMENT, song_id INTEGER, hint_number INTEGER, hint_text TEXT)")
-        
-        # create table GUESS
-        cursor.execute("CREATE TABLE IF NOT EXISTS guess (guessid INTEGER PRIMARY KEY AUTOINCREMENT, song_id INTEGER, user_id INTEGER, seconds INTEGER)")
-        
+            # create table SONG
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS song (
+                    songid SERIAL PRIMARY KEY,
+                    title TEXT,
+                    artist_id INTEGER REFERENCES artist(artistid),
+                    mp3_filepath TEXT
+                )
+            """)
+
+            # create table USER
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS "user" (
+                    userid SERIAL PRIMARY KEY,
+                    username TEXT,
+                    password TEXT,
+                    register_date BIGINT,
+                    email TEXT,
+                    profile_picture TEXT
+                )
+            """)
+
+            # create table HINT
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS hint (
+                    hintid SERIAL PRIMARY KEY,
+                    song_id INTEGER REFERENCES song(songid),
+                    hint_number INTEGER,
+                    hint_text TEXT
+                )
+            """)
+
+            # create table GUESS
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS guess (
+                    guessid SERIAL PRIMARY KEY,
+                    song_id INTEGER REFERENCES song(songid),
+                    user_id INTEGER REFERENCES "user"(userid),
+                    seconds INTEGER
+                )
+            """)
+
         conn.commit()
-        
-        
+
+
 def add_user(username, password, email):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        date_ms = int(time.time()*1000.0)
-        hashed_pw = utils.hash_password(password)
-        cursor.execute(
-            "INSERT INTO user (username, password, register_date, email) VALUES (?, ?, ?, ?)",
-            (username, hashed_pw, date_ms, email)
-        )
-        
+        with conn.cursor() as cursor:
+            date_ms = int(time.time() * 1000.0)
+            hashed_pw = utils.hash_password(password)
+
+            cursor.execute("""
+                INSERT INTO "user" (username, password, register_date, email)
+                VALUES (%s, %s, %s, %s)
+            """, (username, hashed_pw, date_ms, email))
+
         conn.commit()
-        
+
 
 def get_users():
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM user")
-        return cursor.fetchall()
-        
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute('SELECT * FROM "user"')
+            return cursor.fetchall()
+
+
 def get_user(email):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM user WHERE email = '{email}'")
-        
-        user = cursor.fetchone()
-        return user or "no-user"
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute('SELECT * FROM "user" WHERE email = %s', (email,))
+            user = cursor.fetchone()
+            return user or "no-user"
+
+
 def get_user_by_id(userid):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM user WHERE userid = '{userid}'")
-        
-        user = cursor.fetchone()
-        return user or "no-user"
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute('SELECT * FROM "user" WHERE userid = %s', (userid,))
+            user = cursor.fetchone()
+            return user or "no-user"
+
+
 def get_user_id(username):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT userid FROM user WHERE username = '{username}'")
-        
-        userid = cursor.fetchone()['userid']
-        
-        return int(userid)
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute('SELECT userid FROM "user" WHERE username = %s', (username,))
+            row = cursor.fetchone()
+            return int(row["userid"]) if row else None
+
 
 def add_artist(name):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO artist (name) VALUES (?)",
-            (name,)
-        )
-        
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO artist (name) VALUES (%s) RETURNING artistid",
+                (name,)
+            )
+            artistid = cursor.fetchone()[0]
+
         conn.commit()
-        
-        return get_artistid(name)
-    
-    
+        return int(artistid)
+
+
 def get_artistid(name):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT artistid FROM artist WHERE name = '{name}'")
-        
-        artistid = cursor.fetchone()['artistid']
-        
-        return int(artistid)
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("SELECT artistid FROM artist WHERE name = %s", (name,))
+            row = cursor.fetchone()
+            return int(row["artistid"]) if row else None
+
+
 def get_artist_name(artistid):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT name FROM artist WHERE artistid = '{artistid}'")
-        
-        name = cursor.fetchone()['name']
-        
-        return name
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("SELECT name FROM artist WHERE artistid = %s", (artistid,))
+            row = cursor.fetchone()
+            return row["name"] if row else None
 
 
 def get_artists():
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM artist")
-        return cursor.fetchall()
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("SELECT * FROM artist")
+            return cursor.fetchall()
+
+
 def search_artists(query):
+    if not query:
+        return jsonify([])
+
     with get_connection() as conn:
-        cursor = conn.cursor()
-        
-        if not query:
-            return jsonify([])
-        
-        artists = cursor.execute(
-        "SELECT artistid, name FROM artist WHERE name LIKE ?"
-        , (f"%{query}%",)).fetchall()
-        
-        return jsonify([dict(artist) for artist in artists])
-        
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(
+                "SELECT artistid, name FROM artist WHERE name ILIKE %s",
+                (f"%{query}%",)
+            )
+            artists = cursor.fetchall()
+            return jsonify([dict(artist) for artist in artists])
+
 
 def add_song(title, artist_id, filepath):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO song (title, artist_id, mp3_filepath) VALUES (?, ?, ?)",
-            (title, artist_id, filepath)
-        )
-        
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO song (title, artist_id, mp3_filepath)
+                VALUES (%s, %s, %s)
+                RETURNING songid
+            """, (title, artist_id, filepath))
+            songid = cursor.fetchone()[0]
+
         conn.commit()
-        
-        return get_songid(title, artist_id)
-        
+        return int(songid)
+
 
 def get_songid(title, artist_id):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT songid FROM song WHERE title = '{title}' AND artist_id = '{artist_id}'")
-        
-        songid = cursor.fetchone()['songid']
-        
-        return int(songid)
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(
+                "SELECT songid FROM song WHERE title = %s AND artist_id = %s",
+                (title, artist_id)
+            )
+            row = cursor.fetchone()
+            return int(row["songid"]) if row else None
+
+
 def get_song_title(songid):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT title FROM song WHERE songid = '{songid}'")
-        
-        title = cursor.fetchone()['title']
-        
-        return title
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("SELECT title FROM song WHERE songid = %s", (songid,))
+            row = cursor.fetchone()
+            return row["title"] if row else None
+
 
 def get_songs():
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT * FROM song")
-        
-        return cursor.fetchall()
-    
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("SELECT * FROM song")
+            return cursor.fetchall()
+
 
 def search_songs(query, artist):
+    if not query or not artist:
+        return jsonify([])
+
     with get_connection() as conn:
-        cursor = conn.cursor()
-        
-        if not query or not artist:
-            return jsonify([])
-        
-        songs = cursor.execute("""
-        SELECT song.songid, song.title 
-        FROM song
-        JOIN artist ON song.artist_id = artist.artistid
-        WHERE song.title LIKE ? AND artist.name = ?""", (f"%{query}%", artist)).fetchall()
-        
-        return jsonify([dict(song) for song in songs])
-        
-        
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT song.songid, song.title
+                FROM song
+                JOIN artist ON song.artist_id = artist.artistid
+                WHERE song.title ILIKE %s AND artist.name = %s
+            """, (f"%{query}%", artist))
+            songs = cursor.fetchall()
+            return jsonify([dict(song) for song in songs])
+
+
 def add_hint(message, song_id, hint_number):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO hint (hint_text, song_id, hint_number) VALUES (?, ?, ?)",
-            (message, song_id, hint_number)
-        )
-        
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO hint (hint_text, song_id, hint_number)
+                VALUES (%s, %s, %s)
+            """, (message, song_id, hint_number))
+
         conn.commit()
+
 
 def get_song_hints(songid):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        hints = cursor.execute(
-            f"SELECT hint_number, hint_text FROM hint WHERE song_id = '{songid}'"
-            ).fetchall()
-        
-        return hints
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT hint_number, hint_text
+                FROM hint
+                WHERE song_id = %s
+                ORDER BY hint_number ASC
+            """, (songid,))
+            return cursor.fetchall()
 
 
 def add_guess(song_id, user_id, seconds):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO guess (song_id, user_id, seconds) VALUES (?, ?, ?)",
-            (song_id, user_id, seconds)
-        )
-        
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO guess (song_id, user_id, seconds)
+                VALUES (%s, %s, %s)
+            """, (song_id, user_id, seconds))
+
         conn.commit()
-        
+
 
 def get_song_guesses(song_id):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(f"""
-        SELECT user.username, MIN(guess.seconds) as best_time
-        FROM guess
-        JOIN user ON guess.user_id = user.userid
-        WHERE song_id = '{song_id}' 
-        GROUP BY user.username
-        ORDER BY best_time ASC""")
-        
-        return cursor.fetchall()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT "user".username, MIN(guess.seconds) AS best_time
+                FROM guess
+                JOIN "user" ON guess.user_id = "user".userid
+                WHERE guess.song_id = %s
+                GROUP BY "user".userid, "user".username
+                ORDER BY best_time ASC
+            """, (song_id,))
+            return cursor.fetchall()
 
 
 def get_user_songs(user_id):
     with get_connection() as conn:
-        cursor = conn.cursor()
-        songs = cursor.execute(f"""
-        SELECT DISTINCT guess.song_id, song.title, artist.name
-        FROM guess
-        JOIN song ON guess.song_id = song.songid
-        JOIN artist ON song.artist_id = artist.artistid
-        WHERE user_id = '{user_id}'""").fetchall()
-
-        return [dict(song) for song in songs]
-
-
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT DISTINCT guess.song_id, song.title, artist.name
+                FROM guess
+                JOIN song ON guess.song_id = song.songid
+                JOIN artist ON song.artist_id = artist.artistid
+                WHERE guess.user_id = %s
+            """, (user_id,))
+            songs = cursor.fetchall()
+            return [dict(song) for song in songs]
 
 if __name__ == "__main__":
     
