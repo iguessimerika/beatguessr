@@ -233,9 +233,8 @@ def upload():
         artist_id = int(artist_id)
 
     # Datei speichern
-    if file:
+    if file and title and artist_id:
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(filepath)
 
         # Song speichern
         song_id = data.add_song(title, artist_id, filepath)
