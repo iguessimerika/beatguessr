@@ -145,8 +145,9 @@ def play():
 @app.route("/search_artists")
 def search_artists():
     query = request.args.get("q", "")
-
+    print(query)
     artists = data.search_artists(query)
+    print(artists)
     
     return artists
 
