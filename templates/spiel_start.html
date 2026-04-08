@@ -322,12 +322,7 @@
 
             if (!q) return;
 
-            fetch("/search_artists", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ q })
-            })
-
+            const res = await fetch(`/search_songs?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             
             data.forEach(item => {
@@ -355,12 +350,7 @@
 
             if (!q || !artist) return;
 
-            fetch("/search_songs", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ q, artist })
-            })
-            
+            const res = await fetch(`/search_songs?q=${encodeURIComponent(q)}&artist=${encodeURIComponent(artist)}`);
             const data = await res.json();
 
             data.forEach(item => {
