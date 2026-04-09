@@ -163,7 +163,8 @@ def search_artists(query):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(
-                "SELECT artistid, name FROM artist WHERE name ILIKE '%{query}%'"
+                "SELECT artistid, name FROM artist WHERE name ILIKE %s",
+                (f"%{query}%",)
             )
             artists = cursor.fetchall()
             return jsonify(artists)
