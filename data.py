@@ -163,7 +163,7 @@ def search_artists(query):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(
-                "SELECT artistid, name FROM artist WHERE name ILIKE %s",
+                "SELECT DISTINCT artistid, name FROM artist WHERE name ILIKE %s",
                 (f"%{query}%",)
             )
             artists = cursor.fetchall()
@@ -217,13 +217,13 @@ def search_songs(query, artist):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute("""
-                SELECT song.songid, song.title
+                SELECT DISTINCT song.songid, song.title
                 FROM song
                 JOIN artist ON song.artist_id = artist.artistid
-                WHERE song.title ILIKE '%s' AND artist.name = '%s'
+                WHERE song.title ILIKE %s AND artist.name = %s
             """, (f"%{query}%", artist))
             songs = cursor.fetchall()
-            return jsonify([dict(song) for song in songs])
+            return jsonify(songs)
 
 
 def add_hint(message, song_id, hint_number):
