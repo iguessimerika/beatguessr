@@ -46,14 +46,14 @@ def build_highscore_structure(user_id):
         title = song['name'] + " - " + song['title']
         song_guesses = dict(data.get_song_guesses(songid))
 
-        for username in song_guesses:
-            time = song_guesses[username]
+        for guess in song_guesses:
+            time = guess['best_time']
 
             if title not in structure:
                 structure[title] = []
     
             structure[title].append({
-                "username": username,
+                "username": guess['username'],
                 "time": time
             })
 

@@ -42,7 +42,7 @@ def init_database():
 
             # create table USER
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS "user" (
+                CREATE TABLE IF NOT EXISTS users (
                     userid SERIAL PRIMARY KEY,
                     username TEXT,
                     password TEXT,
@@ -67,7 +67,7 @@ def init_database():
                 CREATE TABLE IF NOT EXISTS guess (
                     guessid SERIAL PRIMARY KEY,
                     song_id INTEGER REFERENCES song(songid),
-                    user_id INTEGER REFERENCES "user"(userid),
+                    user_id INTEGER REFERENCES users(userid),
                     seconds INTEGER
                 )
             """)
@@ -82,7 +82,7 @@ def add_user(username, password, email):
             hashed_pw = utils.hash_password(password)
 
             cursor.execute("""
-                INSERT INTO "user" (username, password, register_date, email)
+                INSERT INTO users (username, password, register_date, email)
                 VALUES (%s, %s, %s, %s)
             """, (username, hashed_pw, date_ms, email))
 
@@ -92,14 +92,14 @@ def add_user(username, password, email):
 def get_users():
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute('SELECT * FROM "user"')
+            cursor.execute('SELECT * FROM users')
             return cursor.fetchall()
 
 
 def get_user(email):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute('SELECT * FROM "user" WHERE email = %s', (email,))
+            cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
             user = cursor.fetchone()
             return user or "no-user"
 
@@ -107,7 +107,7 @@ def get_user(email):
 def get_user_by_id(userid):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute('SELECT * FROM "user" WHERE userid = %s', (userid,))
+            cursor.execute('SELECT * FROM users WHERE userid = %s', (userid,))
             user = cursor.fetchone()
             return user or "no-user"
 
@@ -115,7 +115,7 @@ def get_user_by_id(userid):
 def get_user_id(username):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute('SELECT userid FROM "user" WHERE username = %s', (username,))
+            cursor.execute('SELECT userid FROM users WHERE username = %s', (username,))
             row = cursor.fetchone()
             return int(row["userid"]) if row else None
 
@@ -264,11 +264,11 @@ def get_song_guesses(song_id):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute("""
-                SELECT "user".username, MIN(guess.seconds) AS best_time
+                SELECT users.username, MIN(guess.seconds) AS best_time
                 FROM guess
-                JOIN "user" ON guess.user_id = "user".userid
+                JOIN users ON guess.user_id = users.userid
                 WHERE guess.song_id = %s
-                GROUP BY "user".userid, "user".username
+                GROUP BY users.userid, users.username
                 ORDER BY best_time ASC
             """, (song_id,))
             return cursor.fetchall()

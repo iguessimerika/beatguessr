@@ -354,15 +354,7 @@
                 const res = await fetch(`/search_songs?q=${encodeURIComponent(q)}&artist=${encodeURIComponent(artist)}`);
                 const data = await res.json();
 
-                console.log("Songs:", data); // Debug
-
-                // Optional: doppelte Titles rausfiltern
-                const seen = new Set();
-
                 data.forEach(item => {
-                    if (seen.has(item.title)) return;
-                    seen.add(item.title);
-
                     const div = document.createElement("div");
                     div.textContent = item.title;
 
