@@ -316,7 +316,7 @@
         });
 
         /* Dropdown-Funktionalität für Artist */
-        artistInput.addEventListener("input", async () => {
+        artistInput.oninput = async () => {
             const q = artistInput.value;
             artistDropdown.innerHTML = "";
 
@@ -339,10 +339,10 @@
             });
 
             songInput.disabled = !artistInput.value;
-        });
+        };
 
         /* Dropdown-Funktionalität für Song anhand des Artists */
-        songInput.addEventListener("input", async () => {
+        songInput.oninput = async () => {
             const q = songInput.value;
             const artist = artistInput.value;
 
@@ -350,22 +350,35 @@
 
             if (!q || !artist) return;
 
-            const res = await fetch(`/search_songs?q=${encodeURIComponent(q)}&artist=${encodeURIComponent(artist)}`);
-            const data = await res.json();
+            try {
+                const res = await fetch(`/search_songs?q=${encodeURIComponent(q)}&artist=${encodeURIComponent(artist)}`);
+                const data = await res.json();
 
-            data.forEach(item => {
-                const div = document.createElement("div");
-                div.textContent = item.title;
+                console.log("Songs:", data); // Debug
 
-                div.onclick = () => {
-                    songInput.value = item.title;
-                    songInput.dataset.id = item.songid;
-                    songDropdown.innerHTML = "";
-                };
+                // Optional: doppelte Titles rausfiltern
+                const seen = new Set();
 
-                songDropdown.appendChild(div);
-            });
-        });
+                data.forEach(item => {
+                    if (seen.has(item.title)) return;
+                    seen.add(item.title);
+
+                    const div = document.createElement("div");
+                    div.textContent = item.title;
+
+                    div.onclick = () => {
+                        songInput.value = item.title;
+                        songInput.dataset.id = item.songid;
+                        songDropdown.innerHTML = "";
+                    };
+
+                    songDropdown.appendChild(div);
+                });
+
+            } catch (err) {
+                console.error("Fehler beim Laden der Songs:", err);
+            }
+        };
 
         artistInput.addEventListener("change", () => {
             songInput.value = "";
