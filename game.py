@@ -44,8 +44,8 @@ def build_highscore_structure(user_id):
     for song in songs:
         songid = song['song_id']
         title = song['name'] + " - " + song['title']
-        song_guesses = dict(data.get_song_guesses(songid))
-
+        song_guesses = data.get_song_guesses(songid)
+        
         for guess in song_guesses:
             time = guess['best_time']
 
