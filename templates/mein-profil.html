@@ -79,27 +79,6 @@
             font-size: 15px;
         }
 
-        .avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: white;
-            color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 34px;
-            font-weight: 700;
-            margin: 0 auto 10px auto;
-            overflow: hidden;
-        }
-
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
         .small-btn {
             padding: 7px;
             font-size: 14px;
@@ -126,43 +105,31 @@
         <h1 class="title-pulse">Mein Profil</h1>
         <h2>Hallo, {{username}}!</h2>
 
-        <!-- Avatar -->
-        <div class="avatar" id="avatarPreview">
-            {% if avatar_url %}
-                <img src="{{ avatar_url }}" alt="Profilbild">
-            {% else %}
-                {{username[0]}}
-            {% endif %}
-        </div>
-
-        <!-- EIN Button: Bild auswählen + automatisch hochladen -->
-        <form method="POST" action="/profil/upload_avatar" enctype="multipart/form-data">
-            <input type="file" name="avatar" id="avatarInput" accept="image/*" style="display:none;">
-            
-            <button type="button" class="btn small-btn"
-                onclick="document.getElementById('avatarInput').click();">
-                Profilbild hochladen
-            </button>
-        </form>
-
         <p class="section-title">Deine Daten</p>
 
         <form method="POST" action="/profil/update">
 
+            <input type="hidden" name="userid" value="{{userid}}">
+            <input type="hidden" name="action" value="change_data">
             <input class="input-field" type="text" name="username" value="{{username}}" placeholder="Benutzername">
             <input class="input-field" type="email" name="email" value="{{email}}" placeholder="E-Mail">
 
             <button class="btn small-btn" type="submit">Speichern</button>
+            <p>{{msg}}</p>
         </form>
 
         <p class="section-title">Passwort ändern</p>
 
         <form method="POST" action="/profil/password">
 
-            <input class="input-field" type="password" name="old_pw" placeholder="Aktuelles Passwort">
-            <input class="input-field" type="password" name="new_pw" placeholder="Neues Passwort">
+            <input type="hidden" name="userid" value="{{userid}}">
+            <input type="hidden" name="action" value="change_password">
+            <input class="input-field" type="password" name="old_pw" placeholder="Aktuelles Passwort" required>
+            <input class="input-field" type="password" name="new_pw" placeholder="Neues Passwort" required>
+            <input class="input-field" type="password" name="new_pw_confirm" placeholder="Neues Passwort wiederholen" required>
 
             <button class="btn small-btn" type="submit">Passwort ändern</button>
+            <p>{{msg}}</p>
         </form>
 
         <p class="section-title">Navigation</p>
@@ -171,27 +138,6 @@
         <a href="/logout" class="btn">🚪 Logout</a>
 
     </div>
-
-    <script>
-        // Live-Vorschau + automatisches Hochladen
-        const avatarInput = document.getElementById("avatarInput");
-        const avatarPreview = document.getElementById("avatarPreview");
-
-        avatarInput.addEventListener("change", function() {
-            const file = this.files[0];
-            if (!file) return;
-
-            // Vorschau anzeigen
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Profilbild">`;
-            };
-            reader.readAsDataURL(file);
-
-            // Formular automatisch absenden
-            this.closest("form").submit();
-        });
-    </script>
 
 </body>
 </html>

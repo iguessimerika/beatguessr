@@ -47,8 +47,7 @@ def init_database():
                     username TEXT,
                     password TEXT,
                     register_date BIGINT,
-                    email TEXT,
-                    profile_picture TEXT
+                    email TEXT
                 )
             """)
 
@@ -116,6 +115,19 @@ def get_user_id(username):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute('SELECT userid FROM users WHERE username = %s', (username,))
+            row = cursor.fetchone()
+            return int(row["userid"]) if row else None
+        
+def change_user_data(userid, columns, values):
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            counter = 0;
+            query = "UPDATE users "
+            
+            for column in columns:
+                query += f"SET {column} = '{values[counter]}' "
+            
+            cursor.execute(query + f"WHERE userid = '{userid}'")
             row = cursor.fetchone()
             return int(row["userid"]) if row else None
 
