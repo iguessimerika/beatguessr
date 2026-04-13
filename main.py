@@ -108,6 +108,7 @@ def update():
     
     if user_check == "no-user":
         data.change_user_data(userid, ["username", "email"], [username, email])
+        session['current_username'] = username
         msg = "Username / E-Mail aktualisiert"
 
     username = session['current_username']
