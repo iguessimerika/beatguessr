@@ -114,8 +114,8 @@ def update():
     username = session['current_username']
 
     userdata = data.get_user_by_id(userid)
-    
-    return redirect(url_for('profil', username=username, email=userdata['email'], userid=userid, msg=msg))
+
+    return render_template("mein-profil.html", username=username, email=userdata['email'], userid=userid, msg=msg)
 
 @app.route("/profil/password", methods=["POST"])
 def password():
@@ -142,8 +142,8 @@ def password():
     username = session['current_username']
 
     userdata = data.get_user_by_id(userid)
-    
-    return redirect(url_for('profil', username=username, email=userdata['email'], userid=userid, msg=msg))
+
+    return render_template("mein-profil.html", username=username, email=userdata['email'], userid=userid, msg=msg)
 
 
 # Highscores
