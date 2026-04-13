@@ -1,17 +1,16 @@
-import email
-
 from flask import Flask, request, render_template, session, redirect, url_for, send_from_directory, jsonify
-import data, utils, os, game
+import data, utils, os, game, logging
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # wichtig für Sessions!
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 @app.route("/")
 def home():
     data.init_database()
-    
+
     if not session.get('logged_in'):
         return render_template("index.html")
     return render_template("dashboard.html")
@@ -75,11 +74,12 @@ def logout():
     return render_template("index.html")
 
 # Mein Profil
-@app.route("/profil")
-def profil():
+@app.route("/profil", methods=["GET"])
+def profil():        
     if not session.get('logged_in'):
         return redirect(url_for('index'))
     
+    msg = ""
     username = session['current_username']
     user_id = data.get_user_id(username)
 
@@ -88,10 +88,62 @@ def profil():
     context = {
         "username": username,
         "email": userdata['email'],
-        "profile_picture": userdata['profile_picture']
+        "userid": userdata['userid'],
+        "msg": msg
     }
     
     return render_template("mein-profil.html", **context)
+
+@app.route("/profil/update", methods=["POST"])
+def update():
+    
+    msg = ""
+    userid = request.form.get("userid")
+    
+    username = request.form.get("username")
+    email = request.form.get("email")
+    msg = "Es ist bereits ein User mit diesen Daten vorhanden."
+    
+    user_check = data.user_exists(userid, username, email)
+    
+    if user_check == "no-user":
+        data.change_user_data(userid, ["username", "email"], [username, email])
+        session['current_username'] = username
+        msg = "Username / E-Mail aktualisiert"
+
+    username = session['current_username']
+
+    userdata = data.get_user_by_id(userid)
+    
+    return redirect(url_for('profil', username=username, email=userdata['email'], userid=userid, msg=msg))
+
+@app.route("/profil/password", methods=["POST"])
+def password():
+    
+    msg = ""
+    userid = request.form.get("userid")
+    
+    old_pw = request.form.get("old_pw")
+    new_pw1 = request.form.get("new_pw")
+    new_pw2 = request.form.get("new_pw_confirm")
+    user = data.get_user_by_id(userid)
+    user_pw = user['password']
+    
+    if utils.check_password(old_pw, user_pw) and new_pw1 != new_pw2:
+        if new_pw1 != new_pw2:
+            hashed_pw = utils.hash_password(new_pw1)
+            data.change_user_data(userid, ["password"], [hashed_pw])
+            msg = "Passwort aktualisiert!"
+        else:
+            msg = "Passwörter stimmen nicht überein!"
+    else:
+        msg = "Passwort nicht korrekt!"
+    
+    username = session['current_username']
+
+    userdata = data.get_user_by_id(userid)
+    
+    return redirect(url_for('profil', username=username, email=userdata['email'], userid=userid, msg=msg))
 
 
 # Highscores
@@ -102,21 +154,6 @@ def highscores():
     
     username = session['current_username']
     user_id = data.get_user_id(username)
-
-    # highscores = {
-    #     "Song A": [
-    #         {"username": "Max", "time": 12.5},
-    #         {"username": "Anna", "time": 15.2},
-    #         {"username": "Tom", "time": 18.7}
-    #     ],
-    #     "Song B": [
-    #         {"username": "Lisa", "time": 9.8},
-    #         {"username": "Paul", "time": 11.3}
-    #     ],
-    #     "Song C": [
-    #         {"username": "Chris", "time": 14.1}
-    #     ]
-    # }
     
     highscores = game.build_highscore_structure(user_id)
 
@@ -161,7 +198,6 @@ def play():
 @app.route("/search_artists")
 def search_artists():
     query = request.args.get("q", "")
-
     artists = data.search_artists(query)
     
     return artists
@@ -249,9 +285,8 @@ def upload():
         artist_id = int(artist_id)
 
     # Datei speichern
-    if file:
+    if file and title and artist_id:
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(filepath)
 
         # Song speichern
         song_id = data.add_song(title, artist_id, filepath)
