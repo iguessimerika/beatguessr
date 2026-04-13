@@ -135,6 +135,7 @@ def change_user_data(userid, columns, values):
             
             for column in columns:
                 updates.append(f"{column} = '{values[counter]}'")
+                counter += 1
                 
             query += ", ".join(updates)
             
