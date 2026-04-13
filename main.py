@@ -94,7 +94,7 @@ def profil():
     
     return render_template("mein-profil.html", **context)
 
-@app.route("/profil/update", methods=["POST"])
+@app.route("/update", methods=["POST"])
 def profil():
     
     msg = ""
@@ -114,16 +114,9 @@ def profil():
 
     userdata = data.get_user_by_id(userid)
     
-    context = {
-        "username": username,
-        "email": userdata['email'],
-        "userid": userdata['userid'],
-        "msg": msg
-    }
-    
-    return render_template("mein-profil.html", **context)
+    return redirect(url_for('profil', username=username, email=userdata['email'], userid=userid, msg=msg))
 
-@app.route("/profil/password", methods=["POST"])
+@app.route("/password", methods=["POST"])
 def profil():
     
     msg = ""
@@ -146,18 +139,10 @@ def profil():
         msg = "Passwort nicht korrekt!"
     
     username = session['current_username']
-    user_id = data.get_user_id(username)
 
-    userdata = data.get_user_by_id(user_id)
+    userdata = data.get_user_by_id(userid)
     
-    context = {
-        "username": username,
-        "email": userdata['email'],
-        "userid": userdata['userid'],
-        "msg": msg
-    }
-    
-    return render_template("mein-profil.html", **context)
+    return redirect(url_for('profil', username=username, email=userdata['email'], userid=userid, msg=msg))
 
 
 # Highscores
