@@ -74,44 +74,76 @@ def logout():
     return render_template("index.html")
 
 # Mein Profil
-@app.route("/profil", methods=["GET", "POST"])
-def profil():
-    msg = ""
-    
-    if request.method == "POST":
-        action = request.form.get("action")
-        userid = request.form.get("userid")
-        
-        if action == "change_data":
-            username = request.form.get("username")
-            email = request.form.get("email")
-            msg = "Es ist bereits ein User mit diesen Daten vorhanden."
-            
-            user_check = data.user_exists(userid, username, email)
-            
-            if user_check == "no-user":
-                data.change_user_data(userid, ["username", "email"], [username, email])
-                msg = "Username / E-Mail aktualisiert"
-            
-        elif action == "change_pw":
-            old_pw = request.form.get("old_pw")
-            new_pw1 = request.form.get("new_pw")
-            new_pw2 = request.form.get("new_pw_confirm")
-            user = data.get_user_by_id(user_id)
-            user_pw = user['password']
-            
-            if utils.check_password(old_pw, user_pw) and new_pw1 != new_pw2:
-                if new_pw1 != new_pw2:
-                    hashed_pw = utils.hash_password(new_pw1)
-                    data.change_user_data(userid, ["password"], [hashed_pw])
-                    msg = "Passwort aktualisiert!"
-                else:
-                    msg = "Passwörter stimmen nicht überein!"
-            else:
-                msg = "Passwort nicht korrekt!"
-            
+@app.route("/profil", methods=["GET"])
+def profil():        
     if not session.get('logged_in'):
         return redirect(url_for('index'))
+    
+    msg = ""
+    username = session['current_username']
+    user_id = data.get_user_id(username)
+
+    userdata = data.get_user_by_id(user_id)
+    
+    context = {
+        "username": username,
+        "email": userdata['email'],
+        "userid": userdata['userid'],
+        "msg": msg
+    }
+    
+    return render_template("mein-profil.html", **context)
+
+@app.route("/profil/update", methods=["POST"])
+def profil():
+    
+    msg = ""
+    userid = request.form.get("userid")
+    
+    username = request.form.get("username")
+    email = request.form.get("email")
+    msg = "Es ist bereits ein User mit diesen Daten vorhanden."
+    
+    user_check = data.user_exists(userid, username, email)
+    
+    if user_check == "no-user":
+        data.change_user_data(userid, ["username", "email"], [username, email])
+        msg = "Username / E-Mail aktualisiert"
+
+    username = session['current_username']
+
+    userdata = data.get_user_by_id(userid)
+    
+    context = {
+        "username": username,
+        "email": userdata['email'],
+        "userid": userdata['userid'],
+        "msg": msg
+    }
+    
+    return render_template("mein-profil.html", **context)
+
+@app.route("/profil/password", methods=["POST"])
+def profil():
+    
+    msg = ""
+    userid = request.form.get("userid")
+    
+    old_pw = request.form.get("old_pw")
+    new_pw1 = request.form.get("new_pw")
+    new_pw2 = request.form.get("new_pw_confirm")
+    user = data.get_user_by_id(userid)
+    user_pw = user['password']
+    
+    if utils.check_password(old_pw, user_pw) and new_pw1 != new_pw2:
+        if new_pw1 != new_pw2:
+            hashed_pw = utils.hash_password(new_pw1)
+            data.change_user_data(userid, ["password"], [hashed_pw])
+            msg = "Passwort aktualisiert!"
+        else:
+            msg = "Passwörter stimmen nicht überein!"
+    else:
+        msg = "Passwort nicht korrekt!"
     
     username = session['current_username']
     user_id = data.get_user_id(username)
