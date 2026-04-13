@@ -114,7 +114,7 @@ def get_user_by_id(userid):
 def user_exists(userid, username, email):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute('SELECT * FROM users WHERE username = %s AND email = %s AND userid != %s', (username, email, userid))
+            cursor.execute('SELECT * FROM users WHERE (username = %s OR email = %s) AND userid != %s', (username, email, userid))
             user = cursor.fetchone()
             return user or "no-user"
 
@@ -264,13 +264,13 @@ def add_hint(message, song_id, hint_number):
 def get_song_hints(songid):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute("""
+            hints = cursor.execute("""
                 SELECT hint_number, hint_text
                 FROM hint
                 WHERE song_id = %s
                 ORDER BY hint_number ASC
-            """, (songid,))
-            return cursor.fetchall()
+            """, (songid,)).fetchall()
+            return jsonify(hints)
 
 
 def add_guess(song_id, user_id, seconds):
