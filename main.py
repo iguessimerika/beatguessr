@@ -83,8 +83,15 @@ def profil():
         if action == "change_data":
             username = request.form.get("username")
             email = request.form.get("email")
+            msg = "Es ist bereits ein User mit diesen Daten vorhanden."
             
-            data.change_user_data(userid, ["username", "email"], [username, email])
+            user_check = data.user_exists(userid, username, email)
+            
+            if user_check == "no-user":
+                data.change_user_data(userid, ["username", "email"], [username, email])
+                msg = "Username / E-Mail aktualisiert"
+            
+            return render_template("mein-profil.html", msg=msg)
             
         elif action == "change_pw":
             old_pw = request.form.get("old_pw")
@@ -97,7 +104,7 @@ def profil():
                 hashed_pw = utils.hash_password(new_pw1)
                 data.change_user_data(userid, ["password"], [hashed_pw])
                 
-                return render_template("profil.html", msg="Passwort aktualisiert")
+                return render_template("mein-profil.html", msg="Passwort aktualisiert")
             
             
     else:
@@ -112,7 +119,8 @@ def profil():
         context = {
             "username": username,
             "email": userdata['email'],
-            "userid": userdata['userid']
+            "userid": userdata['userid'],
+            "msg": ""
         }
     
     return render_template("mein-profil.html", **context)

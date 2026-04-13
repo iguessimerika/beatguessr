@@ -109,6 +109,14 @@ def get_user_by_id(userid):
             cursor.execute('SELECT * FROM users WHERE userid = %s', (userid,))
             user = cursor.fetchone()
             return user or "no-user"
+        
+
+def user_exists(userid, username, email):
+    with get_connection() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute('SELECT * FROM users WHERE username = %s AND email = %s AND userid != %s', (username, email, userid))
+            user = cursor.fetchone()
+            return user or "no-user"
 
 
 def get_user_id(username):
