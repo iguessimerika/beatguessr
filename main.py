@@ -76,6 +76,8 @@ def logout():
 # Mein Profil
 @app.route("/profil", methods=["GET", "POST"])
 def profil():
+    msg = ""
+    
     if request.method == "POST":
         action = request.form.get("action")
         userid = request.form.get("userid")
@@ -91,8 +93,6 @@ def profil():
                 data.change_user_data(userid, ["username", "email"], [username, email])
                 msg = "Username / E-Mail aktualisiert"
             
-            return render_template("mein-profil.html", msg=msg)
-            
         elif action == "change_pw":
             old_pw = request.form.get("old_pw")
             new_pw1 = request.form.get("new_pw")
@@ -101,27 +101,29 @@ def profil():
             user_pw = user['password']
             
             if utils.check_password(old_pw, user_pw) and new_pw1 != new_pw2:
-                hashed_pw = utils.hash_password(new_pw1)
-                data.change_user_data(userid, ["password"], [hashed_pw])
-                
-                return render_template("mein-profil.html", msg="Passwort aktualisiert")
+                if new_pw1 != new_pw2:
+                    hashed_pw = utils.hash_password(new_pw1)
+                    data.change_user_data(userid, ["password"], [hashed_pw])
+                    msg = "Passwort aktualisiert!"
+                else:
+                    msg = "Passwörter stimmen nicht überein!"
+            else:
+                msg = "Passwort nicht korrekt!"
             
-            
-    else:
-        if not session.get('logged_in'):
-            return redirect(url_for('index'))
-        
-        username = session['current_username']
-        user_id = data.get_user_id(username)
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+    
+    username = session['current_username']
+    user_id = data.get_user_id(username)
 
-        userdata = data.get_user_by_id(user_id)
-        
-        context = {
-            "username": username,
-            "email": userdata['email'],
-            "userid": userdata['userid'],
-            "msg": ""
-        }
+    userdata = data.get_user_by_id(user_id)
+    
+    context = {
+        "username": username,
+        "email": userdata['email'],
+        "userid": userdata['userid'],
+        "msg": msg
+    }
     
     return render_template("mein-profil.html", **context)
 
