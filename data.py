@@ -139,8 +139,8 @@ def change_user_data(userid, columns, values):
             query += ", ".join(updates)
             
             cursor.execute(query + f" WHERE userid = '{userid}'")
-            row = cursor.fetchone()
-            return int(row["userid"]) if row else None
+        
+            conn.commit()
 
 
 def add_artist(name):
