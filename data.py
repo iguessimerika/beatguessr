@@ -264,13 +264,13 @@ def add_hint(message, song_id, hint_number):
 def get_song_hints(songid):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            hints = cursor.execute("""
+            cursor.execute("""
                 SELECT hint_number, hint_text
                 FROM hint
                 WHERE song_id = %s
                 ORDER BY hint_number ASC
-            """, (songid,)).fetchall()
-            return jsonify(hints)
+            """, (songid,))
+            return cursor.fetchall()
 
 
 def add_guess(song_id, user_id, seconds):
