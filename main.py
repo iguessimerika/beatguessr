@@ -94,8 +94,8 @@ def profil():
     
     return render_template("mein-profil.html", **context)
 
-@app.route("/update", methods=["POST"])
-def profil():
+@app.route("/profil/update", methods=["POST"])
+def update():
     
     msg = ""
     userid = request.form.get("userid")
@@ -116,8 +116,8 @@ def profil():
     
     return redirect(url_for('profil', username=username, email=userdata['email'], userid=userid, msg=msg))
 
-@app.route("/password", methods=["POST"])
-def profil():
+@app.route("/profil/password", methods=["POST"])
+def password():
     
     msg = ""
     userid = request.form.get("userid")
