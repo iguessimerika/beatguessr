@@ -89,7 +89,8 @@ def profil():
         "username": username,
         "email": userdata['email'],
         "userid": userdata['userid'],
-        "msg": msg
+        "msg_update": msg,
+        "msg_password": msg
     }
     
     return render_template("mein-profil.html", **context)
@@ -115,7 +116,7 @@ def update():
 
     userdata = data.get_user_by_id(userid)
 
-    return render_template("mein-profil.html", username=username, email=userdata['email'], userid=userid, msg=msg)
+    return render_template("mein-profil.html", username=username, email=userdata['email'], userid=userid, msg_update=msg)
 
 @app.route("/profil/password", methods=["POST"])
 def password():
@@ -140,7 +141,7 @@ def password():
 
     userdata = data.get_user_by_id(userid)
 
-    return render_template("mein-profil.html", username=username, email=userdata['email'], userid=userid, msg=msg)
+    return render_template("mein-profil.html", username=username, email=userdata['email'], userid=userid, msg_password=msg)
 
 
 # Highscores
