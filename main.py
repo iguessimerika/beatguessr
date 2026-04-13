@@ -129,13 +129,10 @@ def password():
     user = data.get_user_by_id(userid)
     user_pw = user['password']
     
-    if utils.check_password(old_pw, user_pw) and new_pw1 != new_pw2:
-        if new_pw1 != new_pw2:
-            hashed_pw = utils.hash_password(new_pw1)
-            data.change_user_data(userid, ["password"], [hashed_pw])
-            msg = "Passwort aktualisiert!"
-        else:
-            msg = "Passwörter stimmen nicht überein!"
+    if utils.check_password(old_pw, user_pw):
+        hashed_pw = utils.hash_password(new_pw1)
+        data.change_user_data(userid, ["password"], [hashed_pw])
+        msg = "Passwort aktualisiert!"
     else:
         msg = "Passwort nicht korrekt!"
     
