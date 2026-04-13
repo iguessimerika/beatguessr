@@ -130,12 +130,15 @@ def change_user_data(userid, columns, values):
     with get_connection() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             counter = 0;
-            query = "UPDATE users "
+            query = "UPDATE users SET "
+            updates = []
             
             for column in columns:
-                query += f"SET {column} = '{values[counter]}' "
+                updates.append(f"{column} = '{values[counter]}'")
+                
+            query += ", ".join(updates)
             
-            cursor.execute(query + f"WHERE userid = '{userid}'")
+            cursor.execute(query + f" WHERE userid = '{userid}'")
             row = cursor.fetchone()
             return int(row["userid"]) if row else None
 
