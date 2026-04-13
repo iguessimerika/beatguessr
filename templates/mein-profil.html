@@ -98,7 +98,7 @@
 
         .msg {
             color: #ffffff;
-            font-size: 14px;
+            font-size: 16px;
             min-height: 18px;
         }
     </style>
@@ -120,8 +120,8 @@
             <input class="input-field" type="text" name="username" value="{{username}}" placeholder="Benutzername">
             <input class="input-field" type="email" name="email" value="{{email}}" placeholder="E-Mail">
 
+            <div id="msg" class="msg">{{ msg_update }}</div>
             <button class="btn small-btn" type="submit">Speichern</button>
-            <div id="msg" class="msg"></div>
         </form>
 
         <p class="section-title">Passwort ändern</p>
@@ -131,11 +131,11 @@
             <input type="hidden" name="userid" value="{{userid}}">
             <input type="hidden" name="action" value="change_password">
             <input class="input-field" type="password" name="old_pw" placeholder="Aktuelles Passwort" required>
-            <input class="input-field" type="password" name="new_pw" placeholder="Neues Passwort" required>
-            <input class="input-field" type="password" name="new_pw_confirm" placeholder="Neues Passwort wiederholen" required>
+            <input class="input-field" type="password" id="new_pw" name="new_pw" placeholder="Neues Passwort" required>
+            <input class="input-field" type="password" id="new_pw_confirm" name="new_pw_confirm" placeholder="Neues Passwort wiederholen" required>
 
+            <div id="msg_password" class="msg">{{ msg_password }}</div>
             <button class="btn small-btn" type="submit">Passwort ändern</button>
-            <div id="msg" class="msg">{{ msg }}</div>
         </form>
 
         <p class="section-title">Navigation</p>
@@ -148,14 +148,14 @@
     <script>
         const pw1 = document.getElementById("new_pw");
         const pw2 = document.getElementById("new_pw_confirm");
-        const msg = document.getElementById("msg");
+        const msg_password = document.getElementById("msg_password");
 
         pw2.addEventListener("input", () => {
             if (pw1.value !== pw2.value) {
-                msg.style.color = '#ff6b6b';
-                msg.textContent = "Passwörter stimmen nicht überein";
+                msg_password.style.color = '#ff6b6b';
+                msg_password.textContent = "Passwörter stimmen nicht überein";
             } else {
-                msg.textContent = "";
+                msg_password.textContent = "";
             }
         });
     </script>
