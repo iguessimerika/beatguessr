@@ -241,18 +241,9 @@ def loose():
     artist_id = request.args.get("artist_id", None)
     song_id = request.args.get("song_id", None)
 
-    user_id = data.get_user_id(username)
-
-    data.add_guess(song_id, user_id, time)
-    
-    artist = data.get_artist_name(artist_id)
-    title = data.get_song_title(song_id)
-
     context = {
         "username": username,
-        "time": time,
-        "artist": artist,
-        "title": title
+        "time": time
     }
 
     return render_template("loose-screen.html", **context)
